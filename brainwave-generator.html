@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brainwave Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg:#080c10; --surface:#0e1419; --border:rgba(255,255,255,0.07);
+  --text:#d8dde8; --muted:#4a5568; --dim:#1e2530;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 15% 85%,rgba(0,200,160,.04) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 85% 15%,rgba(74,122,255,.05) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 50% 50%,rgba(200,122,255,.03) 0%,transparent 70%);}
+.app{position:relative;z-index:1;width:100%;max-width:860px;padding:32px 16px 56px;display:flex;flex-direction:column;gap:20px;}
+
+/* Header */
+.brand{font-family:'DM Serif Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);color:#fff;letter-spacing:-.01em;line-height:1;}
+.brand em{font-style:italic;color:#7aa8ff;}
+.tagline{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:5px;}
+
+/* Section labels */
+.section-label{font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);padding:2px 0;}
+
+/* Dual brainwave grid */
+.channels{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:560px){.channels{grid-template-columns:1fr;}}
+
+/* Generic channel card */
+.channel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:12px;transition:border-color .3s;}
+.channel.active{border-color:color-mix(in srgb,var(--cc) 35%,transparent);}
+
+.ch-header{display:flex;align-items:center;justify-content:space-between;}
+.ch-label{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+.ch-name{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--cc);font-style:italic;}
+
+/* Wave tabs */
+.wave-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+.wave-tab{background:var(--dim);border:1px solid transparent;border-radius:3px;padding:6px 2px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.wave-tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--tc);transform:scaleX(0);transition:transform .18s;}
+.wave-tab:hover::after{transform:scaleX(1);}
+.wave-tab.active{background:color-mix(in srgb,var(--tc) 14%,var(--dim));border-color:color-mix(in srgb,var(--tc) 40%,transparent);}
+.wave-tab.active::after{transform:scaleX(1);}
+.wave-tab .wn{font-family:'DM Serif Display',serif;font-size:1rem;color:#aaa;display:block;}
+.wave-tab.active .wn{color:var(--tc);}
+.wave-tab .wr{font-size:.44rem;letter-spacing:.06em;color:var(--muted);display:block;margin-top:1px;}
+
+/* Canvas */
+.canvas-wrap{position:relative;border-radius:4px;overflow:hidden;background:#0a0e16;}
+canvas{display:block;width:100%;}
+.canvas-overlay{position:absolute;top:7px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;}
+.freq-pill{font-size:.55rem;letter-spacing:.12em;color:var(--cc);background:color-mix(in srgb,var(--cc) 12%,transparent);border:1px solid color-mix(in srgb,var(--cc) 25%,transparent);padding:2px 7px;border-radius:2px;transition:all .3s;}
+.mode-pill{font-size:.5rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
+
+/* Sliders */
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sl{display:flex;flex-direction:column;gap:5px;}
+.sl-row{display:flex;justify-content:space-between;align-items:baseline;}
+.sl-label{font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);}
+.sl-val{font-size:.7rem;color:var(--cc);transition:color .3s;}
+input[type=range]{-webkit-appearance:none;width:100%;height:1px;background:var(--dim);border-radius:1px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:var(--cc);cursor:pointer;box-shadow:0 0 7px var(--cc);transition:background .3s,box-shadow .3s;}
+
+/* Buttons */
+.btn{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;cursor:pointer;padding:10px 12px;transition:all .2s;flex:1;}
+.btn-row{display:flex;gap:8px;}
+.btn-play{background:var(--cc);border:1px solid var(--cc);color:var(--bg);font-weight:500;}
+.btn-play:hover{box-shadow:0 0 20px color-mix(in srgb,var(--cc) 50%,transparent);}
+.btn-play.playing{background:transparent;color:var(--cc);}
+.btn-mode{background:transparent;border:1px solid var(--border);color:var(--text);flex:1.2;}
+.btn-mode.on{border-color:color-mix(in srgb,var(--cc) 50%,transparent);color:var(--cc);}
+
+/* Status */
+.ch-status{display:flex;align-items:center;gap:6px;font-size:.52rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .3s,box-shadow .3s;}
+.dot.live{background:var(--cc);box-shadow:0 0 7px var(--cc);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ── Solfeggio channel ── */
+.solf-channel{background:var(--surface);border:1px solid rgba(200,120,255,.12);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;--sc:#c87aff;position:relative;overflow:hidden;}
+.solf-channel.active{border-color:rgba(200,120,255,.35);}
+.solf-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(200,120,255,.04) 0%,transparent 70%);}
+.solf-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
+.solf-title em{font-style:italic;color:var(--sc);}
+.solf-subtitle{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+
+.solf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+@media(max-width:500px){.solf-grid{grid-template-columns:repeat(2,1fr);}}
+.solf-btn{background:var(--dim);border:1px solid transparent;border-radius:4px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.solf-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--bc);transform:scaleX(0);transition:transform .18s;}
+.solf-btn:hover::after{transform:scaleX(.7);}
+.solf-btn.active{background:color-mix(in srgb,var(--bc) 12%,var(--dim));border-color:color-mix(in srgb,var(--bc) 40%,transparent);}
+.solf-btn.active::after{transform:scaleX(1);}
+.solf-btn .sb-hz{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#ccc;display:block;}
+.solf-btn.active .sb-hz{color:var(--bc);}
+.solf-btn .sb-name{font-size:.46rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;}
+.solf-btn .sb-desc{font-size:.42rem;color:rgba(216,221,232,.35);display:block;margin-top:3px;line-height:1.3;}
+
+/* ── Love Frequency channel ── */
+.love-channel{background:var(--surface);border:1px solid rgba(255,100,130,.12);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;--lc:#ff6482;position:relative;overflow:hidden;}
+.love-channel.active{border-color:rgba(255,100,130,.35);}
+.love-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(255,100,130,.04) 0%,transparent 70%);}
+.love-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
+.love-title em{font-style:italic;color:var(--lc);}
+.love-subtitle{font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+
+.love-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.love-preset{background:var(--dim);border:1px solid transparent;border-radius:4px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.love-preset::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--lc);transform:scaleX(0);transition:transform .18s;}
+.love-preset:hover::after{transform:scaleX(.7);}
+.love-preset.active{background:rgba(255,100,130,.1);border-color:rgba(255,100,130,.4);}
+.love-preset.active::after{transform:scaleX(1);}
+.love-preset .lp-hz{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#ccc;display:block;}
+.love-preset.active .lp-hz{color:var(--lc);}
+.love-preset .lp-name{font-size:.46rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;}
+.love-preset .lp-desc{font-size:.42rem;color:rgba(216,221,232,.35);display:block;margin-top:3px;line-height:1.3;}
+
+/* Shared special channel canvas */
+.sp-canvas-wrap{position:relative;border-radius:4px;overflow:hidden;background:#050a0e;}
+.sp-canvas-wrap canvas{display:block;width:100%;height:80px;}
+.sp-overlay{position:absolute;top:7px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;}
+.sp-pill{font-size:.55rem;letter-spacing:.12em;padding:2px 7px;border-radius:2px;}
+
+/* Combined view */
+.combined-section{display:flex;flex-direction:column;gap:8px;}
+.combined-label{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+.combined-wrap{position:relative;border-radius:4px;overflow:hidden;background:#0a0e16;border:1px solid var(--border);}
+#combinedCanvas{display:block;width:100%;height:80px;}
+.combined-legend{display:flex;gap:12px;padding:0 4px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.48rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
+.legend-dot{width:8px;height:2px;border-radius:1px;}
+
+/* Note box */
+.note-box{font-size:.5rem;letter-spacing:.07em;color:rgba(216,221,232,.28);line-height:1.7;border-left:1px solid var(--border);padding-left:10px;}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="app">
+
+  <div class="header">
+    <h1 class="brand">Brain<em>wave</em> Studio</h1>
+    <p class="tagline">Brainwave · Solfeggio · Love Frequency · Run Simultaneously</p>
+  </div>
+
+  <!-- Dual brainwave channels -->
+  <span class="section-label">Brainwave Entrainment</span>
+  <div class="channels" id="channels"></div>
+
+  <!-- Solfeggio channel -->
+  <span class="section-label">Solfeggio Frequencies</span>
+  <div class="solf-channel" id="solfChannel" style="--cc:#c87aff">
+    <div>
+      <div class="solf-title">Solf<em>eggio</em></div>
+      <div class="solf-subtitle">Ancient Sacred Tones · Select one to play directly</div>
+    </div>
+    <div class="solf-grid" id="solfGrid"></div>
+    <div class="sp-canvas-wrap">
+      <canvas id="solfCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="solfPill" style="color:#c87aff;background:rgba(200,122,255,.1);border:1px solid rgba(200,122,255,.25);">— Hz</span>
+        <span style="font-size:.5rem;letter-spacing:.1em;color:var(--muted);">PURE TONE</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#c87aff">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="solfVolVal">60%</span></div>
+        <input type="range" id="solfVolSlider" min="0" max="100" value="60" style="--cc:#c87aff">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="solfAmpVal">80%</span></div>
+        <input type="range" id="solfAmpSlider" min="10" max="100" value="80" style="--cc:#c87aff">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="solfPlayBtn" style="--cc:#c87aff">▶ Play</button>
+    </div>
+    <div class="ch-status" style="--cc:#c87aff">
+      <span class="dot" id="solfDot" style="--cc:#c87aff"></span>
+      <span id="solfStatus">Select a frequency above, then play</span>
+    </div>
+    <div class="note-box">Solfeggio frequencies are specific tones used in sacred music. Playing them as pure tones allows direct exposure to the frequency. Effects reported are anecdotal; relaxation benefits are likely real, specific healing claims are not scientifically established.</div>
+  </div>
+
+  <!-- Love Frequency channel -->
+  <span class="section-label">Love &amp; Healing Frequencies</span>
+  <div class="love-channel" id="loveChannel" style="--cc:#ff6482">
+    <div>
+      <div class="love-title"><em>Love</em> Frequency</div>
+      <div class="love-subtitle">528 Hz · 432 Hz · 40 Hz · 111 Hz · Coherence Tones</div>
+    </div>
+    <div class="love-presets" id="loveGrid"></div>
+    <div class="sp-canvas-wrap">
+      <canvas id="loveCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="lovePill" style="color:#ff6482;background:rgba(255,100,130,.1);border:1px solid rgba(255,100,130,.25);">— Hz</span>
+        <span style="font-size:.5rem;letter-spacing:.1em;color:var(--muted);">PURE TONE</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#ff6482">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="loveVolVal">60%</span></div>
+        <input type="range" id="loveVolSlider" min="0" max="100" value="60" style="--cc:#ff6482">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="loveAmpVal">80%</span></div>
+        <input type="range" id="loveAmpSlider" min="10" max="100" value="80" style="--cc:#ff6482">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="lovePlayBtn" style="--cc:#ff6482">▶ Play</button>
+    </div>
+    <div class="ch-status" style="--cc:#ff6482">
+      <span class="dot" id="loveDot" style="--cc:#ff6482"></span>
+      <span id="loveStatus">Select a frequency above, then play</span>
+    </div>
+    <div class="note-box">528 Hz is promoted as the "love frequency" or "miracle tone." 432 Hz is an alternative tuning standard. 40 Hz has the strongest scientific backing — MIT research shows it may reduce amyloid plaques. 7.83 Hz mirrors the Schumann resonance. Relaxation and focus effects are well-reported across all.</div>
+  </div>
+
+  <!-- Combined view -->
+  <div class="combined-section">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span class="combined-label">Combined Wave View</span>
+      <div class="combined-legend" id="legend"></div>
+    </div>
+    <div class="combined-wrap"><canvas id="combinedCanvas"></canvas></div>
+  </div>
+
+</div>
+<script>
+// ══════════════════════════════════════════════
+// DATA DEFINITIONS
+// ══════════════════════════════════════════════
+const WAVES = {
+  delta:{ name:'Delta', min:.5, max:4,   def:2,  color:'#00c8a0' },
+  theta:{ name:'Theta', min:4,  max:8,   def:6,  color:'#4a7aff' },
+  alpha:{ name:'Alpha', min:8,  max:13,  def:10, color:'#c87aff' },
+  beta: { name:'Beta',  min:13, max:30,  def:18, color:'#ffaa2a' },
+  gamma:{ name:'Gamma', min:30, max:100, def:40, color:'#ff4a6a' },
+};
+const WK = ['delta','theta','alpha','beta','gamma'];
+const WSYM = {delta:'δ',theta:'θ',alpha:'α',beta:'β',gamma:'γ'};
+const WRG  = {delta:'0.5–4',theta:'4–8',alpha:'8–13',beta:'13–30',gamma:'30–100'};
+const MODES = ['isochronic','binaural','hemisync'];
+const MLBL  = {isochronic:'Iso',binaural:'Bin',hemisync:'Hemi'};
+
+const SOLFEGGIO = [
+  { hz:174, name:'UT',  color:'#b04fff', desc:'Foundation · Pain relief' },
+  { hz:285, name:'RE',  color:'#7a6fff', desc:'Tissue healing' },
+  { hz:396, name:'MI',  color:'#4a7aff', desc:'Liberate fear & guilt' },
+  { hz:417, name:'FA',  color:'#00c8a0', desc:'Facilitate change' },
+  { hz:528, name:'SOL', color:'#ffcf2a', desc:'Love · DNA repair' },
+  { hz:639, name:'LA',  color:'#ff9a2a', desc:'Connecting relationships' },
+  { hz:741, name:'SI',  color:'#ff6a6a', desc:'Awakening intuition' },
+  { hz:852, name:'DO',  color:'#ff4aaa', desc:'Return to spiritual order' },
+  { hz:963, name:'ΩM',  color:'#c87aff', desc:'Crown · Pure consciousness' },
+];
+
+const LOVE_FREQS = [
+  { hz:40,   name:'40 Hz',  color:'#ff6482', desc:'Gamma · Neural coherence · MIT research' },
+  { hz:111,  name:'111 Hz', color:'#c87aff', desc:'Cell regeneration · Beta endorphins' },
+  { hz:432,  name:'432 Hz', color:'#ffaa2a', desc:'Alt tuning · Natural resonance' },
+  { hz:528,  name:'528 Hz', color:'#ffcf2a', desc:'Love tone · Emotional healing' },
+  { hz:639,  name:'639 Hz', color:'#ff9a2a', desc:'Heart chakra · Relationships' },
+];
+
+// ══════════════════════════════════════════════
+// AUDIO ENGINE
+// ══════════════════════════════════════════════
+function hexRgb(hex){ return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).join(','); }
+
+class AudioChannel {
+  constructor(){ this.AC=null; this.masterGain=null; this.nodes=[]; this.isoTimer=null; }
+  track(n){ this.nodes.push(n); return n; }
+  async init(volume){
+    this.AC = new (window.AudioContext||window.webkitAudioContext)();
+    if(this.AC.state==='suspended') await this.AC.resume();
+    this.masterGain = this.AC.createGain();
+    this.masterGain.gain.value = volume;
+    this.masterGain.connect(this.AC.destination);
+  }
+  pureTone(hz){
+    const osc = this.track(this.AC.createOscillator());
+    osc.type='sine'; osc.frequency.value=hz;
+    osc.connect(this.masterGain); osc.start();
+  }
+  isochronic(carrierHz, beatFreq){
+    const osc=this.track(this.AC.createOscillator());
+    const gn=this.track(this.AC.createGain());
+    osc.type='sine'; osc.frequency.value=carrierHz;
+    gn.gain.value=0; osc.connect(gn); gn.connect(this.masterGain); osc.start();
+    const sched=()=>{
+      if(!this.AC) return;
+      const period=1/beatFreq, half=period/2, now=this.AC.currentTime;
+      let t=now;
+      while(t<now+2){ gn.gain.setTargetAtTime(1,t,.004); gn.gain.setTargetAtTime(0,t+half,.004); t+=period; }
+      this.isoTimer=setTimeout(sched,1500);
+    };
+    sched();
+  }
+  binaural(carrierHz, beatFreq){
+    const mA=this.track(this.AC.createOscillator()), mB=this.track(this.AC.createOscillator());
+    const pL=this.track(this.AC.createStereoPanner()), pR=this.track(this.AC.createStereoPanner());
+    mA.type=mB.type='sine'; mA.frequency.value=carrierHz; mB.frequency.value=carrierHz+beatFreq;
+    pL.pan.value=-1; pR.pan.value=1;
+    mA.connect(pL); pL.connect(this.masterGain); mB.connect(pR); pR.connect(this.masterGain);
+    mA.start(); mB.start();
+  }
+  hemisync(carrierHz, beatFreq){
+    this.binaural(carrierHz, beatFreq);
+    const a2=this.track(this.AC.createOscillator()), b2=this.track(this.AC.createOscillator());
+    const pL2=this.track(this.AC.createStereoPanner()), pR2=this.track(this.AC.createStereoPanner());
+    const gA=this.track(this.AC.createGain()), gB=this.track(this.AC.createGain());
+    a2.type=b2.type='sine'; a2.frequency.value=carrierHz+5; b2.frequency.value=carrierHz+5+beatFreq;
+    pL2.pan.value=-1; pR2.pan.value=1; gA.gain.value=gB.gain.value=.6;
+    a2.connect(gA); gA.connect(pL2); pL2.connect(this.masterGain);
+    b2.connect(gB); gB.connect(pR2); pR2.connect(this.masterGain);
+    a2.start(); b2.start();
+  }
+  setVolume(v){ if(this.masterGain) this.masterGain.gain.setTargetAtTime(v,this.AC.currentTime,.02); }
+  stop(){
+    clearTimeout(this.isoTimer); this.isoTimer=null;
+    this.nodes.forEach(n=>{ try{n.stop&&n.stop();n.disconnect();}catch(e){} });
+    this.nodes=[];
+    if(this.masterGain){try{this.masterGain.disconnect();}catch(e){} this.masterGain=null;}
+    if(this.AC){try{this.AC.close();}catch(e){} this.AC=null;}
+  }
+}
+
+// ══════════════════════════════════════════════
+// BRAINWAVE CHANNELS (Ch1 & Ch2)
+// ══════════════════════════════════════════════
+const CH = [
+  {id:0,waveKey:'theta',beatFreq:6,carrierHz:200,volume:.6,waveAmp:.8,audioMode:'isochronic',isPlaying:false,phase:0,audio:null},
+  {id:1,waveKey:'alpha',beatFreq:10,carrierHz:250,volume:.6,waveAmp:.8,audioMode:'isochronic',isPlaying:false,phase:0,audio:null},
+];
+
+const channelsEl=document.getElementById('channels');
+CH.forEach(ch=>{
+  const div=document.createElement('div');
+  div.className='channel'; div.id=`ch${ch.id}`;
+  div.style.setProperty('--cc',WAVES[ch.waveKey].color);
+  div.innerHTML=`
+    <div class="ch-header">
+      <span class="ch-label">Channel ${ch.id+1}</span>
+      <span class="ch-name" id="chName${ch.id}">${WAVES[ch.waveKey].name}</span>
+    </div>
+    <div class="wave-tabs" id="tabs${ch.id}">
+      ${WK.map(k=>`<div class="wave-tab ${k===ch.waveKey?'active':''}" data-wave="${k}" style="--tc:${WAVES[k].color}">
+        <span class="wn">${WSYM[k]}</span><span class="wr">${WRG[k]}</span></div>`).join('')}
+    </div>
+    <div class="canvas-wrap"><canvas id="canvas${ch.id}" style="height:100px"></canvas>
+      <div class="canvas-overlay">
+        <span class="freq-pill" id="freqPill${ch.id}">${ch.beatFreq.toFixed(1)} Hz</span>
+        <span class="mode-pill" id="modePill${ch.id}">Isochronic</span>
+      </div>
+    </div>
+    <div class="sliders">
+      <div class="sl"><div class="sl-row"><span class="sl-label">Frequency</span><span class="sl-val" id="freqVal${ch.id}">${ch.beatFreq.toFixed(1)} Hz</span></div>
+        <input type="range" id="freqSlider${ch.id}" min="${WAVES[ch.waveKey].min}" max="${WAVES[ch.waveKey].max}" step=".1" value="${ch.beatFreq}"></div>
+      <div class="sl"><div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="volVal${ch.id}">60%</span></div>
+        <input type="range" id="volSlider${ch.id}" min="0" max="100" value="60"></div>
+      <div class="sl"><div class="sl-row"><span class="sl-label">Carrier</span><span class="sl-val" id="carrierVal${ch.id}">${ch.carrierHz} Hz</span></div>
+        <input type="range" id="carrierSlider${ch.id}" min="80" max="500" step="5" value="${ch.carrierHz}"></div>
+      <div class="sl"><div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="ampVal${ch.id}">80%</span></div>
+        <input type="range" id="ampSlider${ch.id}" min="10" max="100" value="80"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="playBtn${ch.id}">▶ Play</button>
+      <button class="btn btn-mode" id="modeBtn${ch.id}">Mode: Iso</button>
+    </div>
+    <div class="ch-status"><span class="dot" id="dot${ch.id}"></span><span id="statusText${ch.id}">Idle</span></div>`;
+  channelsEl.appendChild(div);
+});
+
+CH.forEach(ch=>{
+  const i=ch.id;
+  document.getElementById(`tabs${i}`).addEventListener('click',e=>{
+    const t=e.target.closest('.wave-tab'); if(!t) return;
+    ch.waveKey=t.dataset.wave;
+    const w=WAVES[ch.waveKey];
+    document.getElementById(`ch${i}`).style.setProperty('--cc',w.color);
+    document.getElementById(`chName${i}`).textContent=w.name;
+    const fs=document.getElementById(`freqSlider${i}`);
+    fs.min=w.min; fs.max=w.max; ch.beatFreq=w.def; fs.value=ch.beatFreq;
+    updFreq(ch);
+    document.querySelectorAll(`#tabs${i} .wave-tab`).forEach(x=>x.classList.toggle('active',x.dataset.wave===ch.waveKey));
+    if(ch.isPlaying) restartCh(ch);
+    updateLegend();
+  });
+  document.getElementById(`freqSlider${i}`).addEventListener('input',function(){
+    ch.beatFreq=parseFloat(this.value); updFreq(ch); if(ch.isPlaying) restartCh(ch);
+  });
+  document.getElementById(`volSlider${i}`).addEventListener('input',function(){
+    ch.volume=this.value/100; document.getElementById(`volVal${i}`).textContent=this.value+'%';
+    if(ch.audio) ch.audio.setVolume(ch.volume);
+  });
+  document.getElementById(`carrierSlider${i}`).addEventListener('input',function(){
+    ch.carrierHz=parseInt(this.value); document.getElementById(`carrierVal${i}`).textContent=ch.carrierHz+' Hz';
+    if(ch.isPlaying) restartCh(ch);
+  });
+  document.getElementById(`ampSlider${i}`).addEventListener('input',function(){
+    ch.waveAmp=this.value/100; document.getElementById(`ampVal${i}`).textContent=this.value+'%';
+  });
+  document.getElementById(`playBtn${i}`).addEventListener('click',async()=>{
+    const btn=document.getElementById(`playBtn${i}`);
+    if(!ch.isPlaying){
+      ch.audio=new AudioChannel(); await ch.audio.init(ch.volume);
+      playChMode(ch); ch.isPlaying=true;
+      btn.textContent='⏹ Stop'; btn.classList.add('playing');
+      document.getElementById(`ch${i}`).classList.add('active');
+      document.getElementById(`dot${i}`).classList.add('live');
+      updStatus(ch);
+    } else {
+      ch.audio.stop(); ch.audio=null; ch.isPlaying=false;
+      btn.textContent='▶ Play'; btn.classList.remove('playing');
+      document.getElementById(`ch${i}`).classList.remove('active');
+      document.getElementById(`dot${i}`).classList.remove('live');
+      document.getElementById(`statusText${i}`).textContent='Idle';
+    }
+  });
+  document.getElementById(`modeBtn${i}`).addEventListener('click',()=>{
+    ch.audioMode=MODES[(MODES.indexOf(ch.audioMode)+1)%MODES.length];
+    document.getElementById(`modeBtn${i}`).textContent='Mode: '+MLBL[ch.audioMode];
+    document.getElementById(`modeBtn${i}`).classList.toggle('on',ch.audioMode!=='isochronic');
+    document.getElementById(`modePill${i}`).textContent={isochronic:'Isochronic',binaural:'Binaural',hemisync:'Hemi-Sync'}[ch.audioMode];
+    if(ch.isPlaying) restartCh(ch);
+  });
+});
+
+function updFreq(ch){
+  const v=ch.beatFreq.toFixed(1);
+  document.getElementById(`freqVal${ch.id}`).textContent=v+' Hz';
+  document.getElementById(`freqPill${ch.id}`).textContent=v+' Hz';
+}
+function updStatus(ch){
+  const ml={isochronic:'Isochronic',binaural:'Binaural',hemisync:'Hemi-Sync'}[ch.audioMode];
+  document.getElementById(`statusText${ch.id}`).textContent=`${WAVES[ch.waveKey].name} · ${ch.beatFreq.toFixed(1)} Hz · ${ml}`;
+}
+function playChMode(ch){
+  if(ch.audioMode==='binaural') ch.audio.binaural(ch.carrierHz,ch.beatFreq);
+  else if(ch.audioMode==='hemisync') ch.audio.hemisync(ch.carrierHz,ch.beatFreq);
+  else ch.audio.isochronic(ch.carrierHz,ch.beatFreq);
+}
+async function restartCh(ch){
+  if(!ch.isPlaying) return;
+  ch.audio.stop(); ch.audio=new AudioChannel(); await ch.audio.init(ch.volume);
+  playChMode(ch); updStatus(ch);
+}
+
+// ══════════════════════════════════════════════
+// SOLFEGGIO CHANNEL
+// ══════════════════════════════════════════════
+let solfState={selectedHz:528,isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#ffcf2a'};
+
+const solfGrid=document.getElementById('solfGrid');
+SOLFEGGIO.forEach(s=>{
+  const btn=document.createElement('div');
+  btn.className='solf-btn'+(s.hz===solfState.selectedHz?' active':'');
+  btn.style.setProperty('--bc',s.color);
+  btn.innerHTML=`<span class="sb-hz">${s.hz}</span><span class="sb-name">${s.name}</span><span class="sb-desc">${s.desc}</span>`;
+  btn.addEventListener('click',()=>{
+    solfState.selectedHz=s.hz; solfState.color=s.color;
+    document.querySelectorAll('.solf-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('solfPill').textContent=s.hz+' Hz';
+    document.getElementById('solfPill').style.color=s.color;
+    document.getElementById('solfStatus').textContent=`${s.hz} Hz — ${s.name} — ${s.desc}`;
+    if(solfState.isPlaying) restartSolf();
+  });
+  solfGrid.appendChild(btn);
+});
+document.getElementById('solfPill').textContent='528 Hz';
+
+document.getElementById('solfVolSlider').addEventListener('input',function(){
+  solfState.volume=this.value/100; document.getElementById('solfVolVal').textContent=this.value+'%';
+  if(solfState.audio) solfState.audio.setVolume(solfState.volume);
+});
+document.getElementById('solfAmpSlider').addEventListener('input',function(){
+  solfState.waveAmp=this.value/100; document.getElementById('solfAmpVal').textContent=this.value+'%';
+});
+document.getElementById('solfPlayBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('solfPlayBtn');
+  if(!solfState.isPlaying){
+    solfState.audio=new AudioChannel(); await solfState.audio.init(solfState.volume);
+    solfState.audio.pureTone(solfState.selectedHz);
+    solfState.isPlaying=true; btn.textContent='⏹ Stop'; btn.classList.add('playing');
+    document.getElementById('solfChannel').classList.add('active');
+    document.getElementById('solfDot').classList.add('live');
+    document.getElementById('solfStatus').textContent=`Playing ${solfState.selectedHz} Hz pure tone`;
+  } else {
+    solfState.audio.stop(); solfState.audio=null; solfState.isPlaying=false;
+    btn.textContent='▶ Play'; btn.classList.remove('playing');
+    document.getElementById('solfChannel').classList.remove('active');
+    document.getElementById('solfDot').classList.remove('live');
+    document.getElementById('solfStatus').textContent='Select a frequency above, then play';
+  }
+});
+async function restartSolf(){
+  if(!solfState.isPlaying) return;
+  solfState.audio.stop(); solfState.audio=new AudioChannel();
+  await solfState.audio.init(solfState.volume);
+  solfState.audio.pureTone(solfState.selectedHz);
+}
+
+// ══════════════════════════════════════════════
+// LOVE FREQUENCY CHANNEL
+// ══════════════════════════════════════════════
+let loveState={selectedHz:528,isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#ffcf2a'};
+
+const loveGrid=document.getElementById('loveGrid');
+LOVE_FREQS.forEach(f=>{
+  const btn=document.createElement('div');
+  btn.className='love-preset'+(f.hz===528?' active':'');
+  btn.innerHTML=`<span class="lp-hz">${f.hz}</span><span class="lp-name">${f.name}</span><span class="lp-desc">${f.desc}</span>`;
+  btn.addEventListener('click',()=>{
+    loveState.selectedHz=f.hz; loveState.color=f.color;
+    document.querySelectorAll('.love-preset').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('lovePill').textContent=f.hz+' Hz';
+    document.getElementById('lovePill').style.color=f.color;
+    document.getElementById('loveStatus').textContent=`${f.hz} Hz — ${f.desc}`;
+    if(loveState.isPlaying) restartLove();
+  });
+  loveGrid.appendChild(btn);
+});
+document.getElementById('lovePill').textContent='528 Hz';
+
+document.getElementById('loveVolSlider').addEventListener('input',function(){
+  loveState.volume=this.value/100; document.getElementById('loveVolVal').textContent=this.value+'%';
+  if(loveState.audio) loveState.audio.setVolume(loveState.volume);
+});
+document.getElementById('loveAmpSlider').addEventListener('input',function(){
+  loveState.waveAmp=this.value/100; document.getElementById('loveAmpVal').textContent=this.value+'%';
+});
+document.getElementById('lovePlayBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('lovePlayBtn');
+  if(!loveState.isPlaying){
+    loveState.audio=new AudioChannel(); await loveState.audio.init(loveState.volume);
+    loveState.audio.pureTone(loveState.selectedHz);
+    loveState.isPlaying=true; btn.textContent='⏹ Stop'; btn.classList.add('playing');
+    document.getElementById('loveChannel').classList.add('active');
+    document.getElementById('loveDot').classList.add('live');
+    document.getElementById('loveStatus').textContent=`Playing ${loveState.selectedHz} Hz pure tone`;
+  } else {
+    loveState.audio.stop(); loveState.audio=null; loveState.isPlaying=false;
+    btn.textContent='▶ Play'; btn.classList.remove('playing');
+    document.getElementById('loveChannel').classList.remove('active');
+    document.getElementById('loveDot').classList.remove('live');
+    document.getElementById('loveStatus').textContent='Select a frequency above, then play';
+  }
+});
+async function restartLove(){
+  if(!loveState.isPlaying) return;
+  loveState.audio.stop(); loveState.audio=new AudioChannel();
+  await loveState.audio.init(loveState.volume);
+  loveState.audio.pureTone(loveState.selectedHz);
+}
+
+// ══════════════════════════════════════════════
+// CANVAS ENGINE
+// ══════════════════════════════════════════════
+function resizeCanvas(el,cx){
+  const dpr=window.devicePixelRatio||1;
+  el.width=el.offsetWidth*dpr; el.height=el.offsetHeight*dpr;
+  cx.scale(dpr,dpr);
+}
+
+const allCanvases=[];
+function regCanvas(id){ const el=document.getElementById(id),cx=el.getContext('2d'); resizeAll2(el,cx); allCanvases.push({el,cx}); return {el,cx}; }
+function resizeAll2(el,cx){ const dpr=window.devicePixelRatio||1; el.width=el.offsetWidth*dpr; el.height=el.offsetHeight*dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
+window.addEventListener('resize',()=>allCanvases.forEach(({el,cx})=>resizeAll2(el,cx)));
+
+const ch0canvas=regCanvas('canvas0');
+const ch1canvas=regCanvas('canvas1');
+const solfCv=regCanvas('solfCanvas');
+const loveCv=regCanvas('loveCanvas');
+const combCv=regCanvas('combinedCanvas');
+
+function drawWave(cx,W,H,phase,freq,color,amp,alpha){
+  const rgb=hexRgb(color), cy=H/2;
+  const a=cy*.6*amp, cycles=Math.min(freq/1.5,12);
+  for(let g=2;g>=0;g--){
+    cx.beginPath(); cx.globalAlpha=.02+g*.02; cx.strokeStyle=color; cx.lineWidth=(3-g)*2;
+    for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+    cx.stroke();
+  }
+  cx.beginPath(); cx.globalAlpha=alpha||1;
+  const gr=cx.createLinearGradient(0,0,W,0);
+  gr.addColorStop(0,`rgba(${rgb},.1)`); gr.addColorStop(.3,color); gr.addColorStop(.7,color); gr.addColorStop(1,`rgba(${rgb},.1)`);
+  cx.strokeStyle=gr; cx.lineWidth=alpha?1.5:2; cx.shadowColor=color; cx.shadowBlur=8;
+  for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+  cx.stroke(); cx.shadowBlur=0; cx.globalAlpha=1;
+}
+
+function drawPureTone(cx,W,H,phase,hz,color,amp){
+  // For pure tones (solfeggio/love) show a clean sine at scaled visual rate
+  const rgb=hexRgb(color), cy=H/2;
+  const a=cy*.65*amp;
+  const cycles=5; // fixed visual cycles for pure tone
+  for(let g=2;g>=0;g--){
+    cx.beginPath(); cx.globalAlpha=.02+g*.025; cx.strokeStyle=color; cx.lineWidth=(3-g)*2;
+    for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+    cx.stroke();
+  }
+  cx.beginPath(); cx.globalAlpha=1;
+  const gr=cx.createLinearGradient(0,0,W,0);
+  const rgb2=hexRgb(color);
+  gr.addColorStop(0,`rgba(${rgb2},.1)`); gr.addColorStop(.3,color); gr.addColorStop(.7,color); gr.addColorStop(1,`rgba(${rgb2},.1)`);
+  cx.strokeStyle=gr; cx.lineWidth=2; cx.shadowColor=color; cx.shadowBlur=10;
+  for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+  cx.stroke(); cx.shadowBlur=0; cx.globalAlpha=1;
+}
+
+function clearCv(cx,W,H){ cx.clearRect(0,0,W,H); }
+function gridLine(cx,W,H,color){
+  cx.beginPath(); cx.globalAlpha=.05; cx.strokeStyle=color; cx.lineWidth=1; cx.setLineDash([3,9]);
+  cx.moveTo(0,H/2); cx.lineTo(W,H/2); cx.stroke(); cx.setLineDash([]); cx.globalAlpha=1;
+}
+
+function updateLegend(){
+  const leg=document.getElementById('legend'); leg.innerHTML='';
+  const items=[
+    {color:WAVES[CH[0].waveKey].color, label:`Ch1: ${WAVES[CH[0].waveKey].name}`},
+    {color:WAVES[CH[1].waveKey].color, label:`Ch2: ${WAVES[CH[1].waveKey].name}`},
+    {color:solfState.color, label:`Solf: ${solfState.selectedHz}Hz`},
+    {color:loveState.color, label:`Love: ${loveState.selectedHz}Hz`},
+  ];
+  items.forEach(it=>{
+    const d=document.createElement('div'); d.className='legend-item';
+    d.innerHTML=`<div class="legend-dot" style="background:${it.color}"></div><span>${it.label}</span>`;
+    leg.appendChild(d);
+  });
+}
+updateLegend();
+
+function animate(){
+  // Ch0
+  {const {el,cx}=ch0canvas,ch=CH[0],W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,WAVES[ch.waveKey].color);
+  drawWave(cx,W,H,ch.phase,ch.beatFreq,WAVES[ch.waveKey].color,ch.waveAmp,1);
+  ch.phase+=ch.isPlaying?ch.beatFreq*.01:.005;}
+
+  // Ch1
+  {const {el,cx}=ch1canvas,ch=CH[1],W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,WAVES[ch.waveKey].color);
+  drawWave(cx,W,H,ch.phase,ch.beatFreq,WAVES[ch.waveKey].color,ch.waveAmp,1);
+  ch.phase+=ch.isPlaying?ch.beatFreq*.01:.005;}
+
+  // Solfeggio
+  {const {el,cx}=solfCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,solfState.color);
+  drawPureTone(cx,W,H,solfState.phase,solfState.selectedHz,solfState.color,solfState.waveAmp);
+  solfState.phase+=solfState.isPlaying?.04:.005;}
+
+  // Love
+  {const {el,cx}=loveCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,loveState.color);
+  drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp);
+  loveState.phase+=loveState.isPlaying?.04:.005;}
+
+  // Combined
+  {const {el,cx}=combCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,'#4a7aff');
+  drawWave(cx,W,H,CH[0].phase,CH[0].beatFreq,WAVES[CH[0].waveKey].color,CH[0].waveAmp,.7);
+  drawWave(cx,W,H,CH[1].phase,CH[1].beatFreq,WAVES[CH[1].waveKey].color,CH[1].waveAmp,.7);
+  drawPureTone(cx,W,H,solfState.phase,solfState.selectedHz,solfState.color,solfState.waveAmp*.5);
+  drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp*.5);}
+
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
