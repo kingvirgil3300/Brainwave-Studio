@@ -1,0 +1,1719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Brainwave Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg:#080c10; --surface:#0e1419; --border:rgba(255,255,255,0.07);
+  --text:#d8dde8; --muted:#4a5568; --dim:#1e2530;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;}
+input[type=range]{touch-action:pan-x;}
+.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 15% 85%,rgba(0,200,160,.04) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 85% 15%,rgba(74,122,255,.05) 0%,transparent 60%),radial-gradient(ellipse 40% 30% at 50% 50%,rgba(200,122,255,.03) 0%,transparent 70%);}
+.app{position:relative;z-index:1;width:100%;max-width:860px;padding:32px 16px 56px;display:flex;flex-direction:column;gap:20px;}
+
+/* Header */
+.brand{font-family:'DM Serif Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);color:#fff;letter-spacing:-.01em;line-height:1;}
+.brand em{font-style:italic;color:#7aa8ff;}
+.tagline{font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:5px;}
+
+/* Section labels */
+.section-label{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);padding:2px 0;}
+
+/* Dual brainwave grid */
+.channels{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:560px){.channels{grid-template-columns:1fr;}}
+
+/* Generic channel card */
+.channel{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:border-color .3s;}
+.channel.active{border-color:color-mix(in srgb,var(--cc) 35%,transparent);}
+
+.ch-header{display:flex;align-items:center;justify-content:space-between;}
+.ch-label{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+.ch-name{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--cc);font-style:italic;}
+
+/* Wave tabs */
+.wave-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+.wave-tab{background:var(--dim);border:1px solid transparent;border-radius:3px;padding:8px 2px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.wave-tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--tc);transform:scaleX(0);transition:transform .18s;}
+.wave-tab:hover::after{transform:scaleX(1);}
+.wave-tab.active{background:color-mix(in srgb,var(--tc) 14%,var(--dim));border-color:color-mix(in srgb,var(--tc) 40%,transparent);}
+.wave-tab.active::after{transform:scaleX(1);}
+.wave-tab .wn{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#aaa;display:block;}
+.wave-tab.active .wn{color:var(--tc);}
+.wave-tab .wr{font-size:.65rem;letter-spacing:.06em;color:var(--muted);display:block;margin-top:2px;}
+
+/* Canvas */
+.canvas-wrap{position:relative;border-radius:4px;overflow:hidden;background:#0a0e16;}
+canvas{display:block;width:100%;}
+.canvas-overlay{position:absolute;top:7px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;}
+.freq-pill{font-size:.7rem;letter-spacing:.12em;color:var(--cc);background:color-mix(in srgb,var(--cc) 12%,transparent);border:1px solid color-mix(in srgb,var(--cc) 25%,transparent);padding:3px 9px;border-radius:2px;transition:all .3s;}
+.mode-pill{font-size:.65rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
+
+/* Sliders */
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.sl{display:flex;flex-direction:column;gap:8px;}
+.sl-row{display:flex;justify-content:space-between;align-items:baseline;}
+.sl-label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);}
+.sl-val{font-size:.88rem;color:var(--cc);transition:color .3s;font-weight:500;}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--dim);border-radius:4px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--cc);cursor:pointer;box-shadow:0 0 10px var(--cc);transition:background .3s,box-shadow .3s;}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2);}
+
+/* Buttons */
+.btn{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;cursor:pointer;padding:14px 12px;transition:all .2s;flex:1;}
+.btn-row{display:flex;gap:8px;}
+.btn-play{background:var(--cc);border:1px solid var(--cc);color:var(--bg);font-weight:500;}
+.btn-play:hover{box-shadow:0 0 20px color-mix(in srgb,var(--cc) 50%,transparent);}
+.btn-play.playing{background:transparent;color:var(--cc);}
+.btn-mode{background:transparent;border:1px solid var(--border);color:var(--text);flex:1.2;}
+.btn-mode.on{border-color:color-mix(in srgb,var(--cc) 50%,transparent);color:var(--cc);}
+
+/* Status */
+.ch-status{display:flex;align-items:center;gap:6px;font-size:.65rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .3s,box-shadow .3s;}
+.dot.live{background:var(--cc);box-shadow:0 0 7px var(--cc);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ── Solfeggio channel ── */
+.solf-channel{background:var(--surface);border:1px solid rgba(200,120,255,.12);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;--sc:#c87aff;position:relative;overflow:hidden;}
+.solf-channel.active{border-color:rgba(200,120,255,.35);}
+.solf-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(200,120,255,.04) 0%,transparent 70%);}
+.solf-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;}
+.solf-title em{font-style:italic;color:var(--sc);}
+.solf-subtitle{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+
+.solf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+@media(max-width:500px){.solf-grid{grid-template-columns:repeat(2,1fr);}}
+.solf-btn{background:var(--dim);border:1px solid transparent;border-radius:4px;padding:12px 6px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.solf-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--bc);transform:scaleX(0);transition:transform .18s;}
+.solf-btn:hover::after{transform:scaleX(.7);}
+.solf-btn.active{background:color-mix(in srgb,var(--bc) 12%,var(--dim));border-color:color-mix(in srgb,var(--bc) 40%,transparent);}
+.solf-btn.active::after{transform:scaleX(1);}
+.solf-btn .sb-hz{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#ccc;display:block;}
+.solf-btn.active .sb-hz{color:var(--bc);}
+.solf-btn .sb-name{font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-top:3px;}
+.solf-btn .sb-desc{font-size:.78rem;color:rgba(216,221,232,.6);display:block;margin-top:3px;line-height:1.4;}
+
+/* ── Love Frequency channel ── */
+.love-channel{background:var(--surface);border:1px solid rgba(255,100,130,.12);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;--lc:#ff6482;position:relative;overflow:hidden;}
+.love-channel.active{border-color:rgba(255,100,130,.35);}
+.love-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(255,100,130,.04) 0%,transparent 70%);}
+.love-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;}
+.love-title em{font-style:italic;color:var(--lc);}
+.love-subtitle{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+
+.love-presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.love-preset{background:var(--dim);border:1px solid transparent;border-radius:4px;padding:12px 6px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.love-preset::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--lc);transform:scaleX(0);transition:transform .18s;}
+.love-preset:hover::after{transform:scaleX(.7);}
+.love-preset.active{background:rgba(255,100,130,.1);border-color:rgba(255,100,130,.4);}
+.love-preset.active::after{transform:scaleX(1);}
+.love-preset .lp-hz{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#ccc;display:block;}
+.love-preset.active .lp-hz{color:var(--lc);}
+.love-preset .lp-name{font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-top:3px;}
+.love-preset .lp-desc{font-size:.78rem;color:rgba(216,221,232,.6);display:block;margin-top:3px;line-height:1.4;}
+
+/* Shared special channel canvas */
+.sp-canvas-wrap{position:relative;border-radius:4px;overflow:hidden;background:#050a0e;}
+.sp-canvas-wrap canvas{display:block;width:100%;height:80px;}
+.sp-overlay{position:absolute;top:7px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;}
+.sp-pill{font-size:.55rem;letter-spacing:.12em;padding:2px 7px;border-radius:2px;}
+
+/* Combined view */
+.combined-section{display:flex;flex-direction:column;gap:8px;}
+.combined-label{font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+.combined-wrap{position:relative;border-radius:4px;overflow:hidden;background:#0a0e16;border:1px solid var(--border);}
+#combinedCanvas{display:block;width:100%;height:80px;}
+.combined-legend{display:flex;gap:12px;padding:0 4px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.48rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;}
+.legend-dot{width:8px;height:2px;border-radius:1px;}
+
+/* Note box */
+.note-box{font-size:.78rem;letter-spacing:.07em;color:rgba(216,221,232,.5);line-height:1.7;border-left:1px solid var(--border);padding-left:10px;}
+
+/* ── Nature Sounds ── */
+.nature-channel{background:var(--surface);border:1px solid rgba(0,200,160,.12);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.nature-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+.nature-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
+.nature-title em{font-style:italic;color:#00c8a0;}
+.nature-subtitle{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.nature-vol-wrap{display:flex;flex-direction:column;gap:3px;min-width:120px;}
+.nature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.nature-btn{background:var(--dim);border:1px solid transparent;border-radius:5px;padding:12px 8px;cursor:pointer;text-align:center;transition:all .2s;position:relative;overflow:hidden;}
+.nature-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#00c8a0;transform:scaleX(0);transition:transform .2s;}
+.nature-btn:hover::after{transform:scaleX(.7);}
+.nature-btn.active{background:rgba(0,200,160,.1);border-color:rgba(0,200,160,.4);}
+.nature-btn.active::after{transform:scaleX(1);}
+.nature-btn .nb-icon{font-size:1.6rem;display:block;margin-bottom:4px;}
+.nature-btn .nb-name{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;}
+.nature-btn.active .nb-name{color:#00c8a0;}
+
+/* ── QR Panel ── */
+.qr-panel{background:var(--surface);border:1px solid rgba(122,170,255,.15);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.qr-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
+.qr-title em{font-style:italic;color:#7aa8ff;}
+.qr-subtitle{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.qr-body{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+.qr-canvas-wrap{background:#fff;border-radius:6px;padding:8px;flex-shrink:0;}
+#qrCanvas{display:block;width:160px;height:160px;image-rendering:pixelated;}
+.qr-info{display:flex;flex-direction:column;gap:10px;flex:1;min-width:160px;}
+.qr-stack-preview{font-size:.65rem;line-height:1.7;color:rgba(216,221,232,.5);letter-spacing:.05em;border-left:1px solid var(--border);padding-left:10px;}
+.btn-qr{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;cursor:pointer;padding:12px;transition:all .2s;background:#7aa8ff;border:1px solid #7aa8ff;color:#080c10;font-weight:500;}
+.btn-qr:hover{box-shadow:0 0 18px rgba(122,170,255,.4);}
+.btn-qr-sec{background:transparent;border-color:rgba(122,170,255,.35);color:#7aa8ff;}
+.btn-qr-sec:hover{background:rgba(122,170,255,.08);}
+
+/* ── Fractal Visualizer ── */
+.fractal-section{display:flex;flex-direction:column;gap:10px;}
+.fractal-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.fractal-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
+.fractal-title em{font-style:italic;color:#a78bff;}
+.fractal-subtitle{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+.fractal-mode-badge{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:#a78bff;background:rgba(167,139,255,.1);border:1px solid rgba(167,139,255,.25);padding:3px 10px;border-radius:2px;}
+.fractal-wrap{position:relative;border-radius:8px;overflow:hidden;background:#030508;border:1px solid rgba(167,139,255,.15);cursor:pointer;}
+#fractalCanvas{display:block;width:100%;height:340px;}
+.fractal-hint{position:absolute;bottom:10px;right:12px;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.2);pointer-events:none;}
+.fractal-controls{display:flex;gap:8px;}
+.btn-fractal{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;border-radius:3px;cursor:pointer;padding:12px;transition:all .2s;flex:1;background:transparent;border:1px solid rgba(167,139,255,.3);color:#a78bff;}
+.btn-fractal:hover{background:rgba(167,139,255,.1);box-shadow:0 0 16px rgba(167,139,255,.2);}
+/* Fractal dropdown */
+.fractal-select-wrap{position:relative;flex:2;display:flex;align-items:center;}
+.fractal-select-wrap select{
+  -webkit-appearance:none;appearance:none;
+  width:100%;padding:13px 36px 13px 14px;
+  background:rgba(167,139,255,0.08);
+  border:1px solid rgba(167,139,255,0.35);
+  border-radius:3px;
+  color:#a78bff;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;
+  cursor:pointer;outline:none;
+  transition:border-color .2s,background .2s;
+}
+.fractal-select-wrap select:focus{
+  border-color:rgba(167,139,255,.7);
+  background:rgba(167,139,255,.14);
+}
+.fractal-select-wrap select option{
+  background:#0e1419;color:#d8dde8;
+  font-size:.8rem;letter-spacing:.05em;
+}
+.select-arrow{
+  position:absolute;right:12px;pointer-events:none;
+  color:#a78bff;font-size:.9rem;
+}
+
+.btn-fractal.active-viz{background:rgba(167,139,255,.15);border-color:rgba(167,139,255,.6);}
+
+/* Fractal sliders */
+.fractal-sliders{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px;}
+.fsl{display:flex;flex-direction:column;gap:7px;}
+.fsl-row{display:flex;justify-content:space-between;align-items:baseline;}
+.fsl-label{font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);}
+.fsl-val{font-size:.88rem;color:#a78bff;font-weight:500;}
+.fractal-sliders input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--dim);border-radius:4px;outline:none;}
+.fractal-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#a78bff;cursor:pointer;box-shadow:0 0 10px #a78bff;transition:box-shadow .2s;}
+.fractal-sliders input[type=range]::-webkit-slider-thumb:active{box-shadow:0 0 20px #a78bff;transform:scale(1.15);}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="app">
+
+  <div class="header">
+    <h1 class="brand">Brain<em>wave</em> Studio</h1>
+    <p class="tagline">Brainwave · Solfeggio · Love Frequency · Run Simultaneously</p>
+  </div>
+
+  <!-- Dual brainwave channels -->
+  <span class="section-label">Brainwave Entrainment</span>
+  <div class="channels" id="channels"></div>
+
+  <!-- Solfeggio channel -->
+  <span class="section-label">Solfeggio Frequencies</span>
+  <div class="solf-channel" id="solfChannel" style="--cc:#c87aff">
+    <div>
+      <div class="solf-title">Solf<em>eggio</em></div>
+      <div class="solf-subtitle">Ancient Sacred Tones · Select one to play directly</div>
+    </div>
+    <div class="solf-grid" id="solfGrid"></div>
+    <div class="sp-canvas-wrap">
+      <canvas id="solfCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="solfPill" style="color:#c87aff;background:rgba(200,122,255,.1);border:1px solid rgba(200,122,255,.25);">— Hz</span>
+        <span style="font-size:.5rem;letter-spacing:.1em;color:var(--muted);">PURE TONE</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#c87aff">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="solfVolVal">60%</span></div>
+        <input type="range" id="solfVolSlider" min="0" max="100" value="60" style="--cc:#c87aff">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="solfAmpVal">80%</span></div>
+        <input type="range" id="solfAmpSlider" min="10" max="100" value="80" style="--cc:#c87aff">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="solfPlayBtn" style="--cc:#c87aff">▶ Play</button>
+    </div>
+    <div class="ch-status" style="--cc:#c87aff">
+      <span class="dot" id="solfDot" style="--cc:#c87aff"></span>
+      <span id="solfStatus">Select a frequency above, then play</span>
+    </div>
+    <div class="note-box">Solfeggio frequencies are specific tones used in sacred music. Playing them as pure tones allows direct exposure to the frequency. Effects reported are anecdotal; relaxation benefits are likely real, specific healing claims are not scientifically established.</div>
+  </div>
+
+  <!-- Love Frequency channel -->
+  <span class="section-label">Love &amp; Healing Frequencies</span>
+  <div class="love-channel" id="loveChannel" style="--cc:#ff6482">
+    <div>
+      <div class="love-title"><em>Love</em> Frequency</div>
+      <div class="love-subtitle">528 Hz · 432 Hz · 40 Hz · 111 Hz · Coherence Tones</div>
+    </div>
+    <div class="love-presets" id="loveGrid"></div>
+    <div class="sp-canvas-wrap">
+      <canvas id="loveCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="lovePill" style="color:#ff6482;background:rgba(255,100,130,.1);border:1px solid rgba(255,100,130,.25);">— Hz</span>
+        <span style="font-size:.5rem;letter-spacing:.1em;color:var(--muted);">PURE TONE</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#ff6482">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="loveVolVal">60%</span></div>
+        <input type="range" id="loveVolSlider" min="0" max="100" value="60" style="--cc:#ff6482">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="loveAmpVal">80%</span></div>
+        <input type="range" id="loveAmpSlider" min="10" max="100" value="80" style="--cc:#ff6482">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="lovePlayBtn" style="--cc:#ff6482">▶ Play</button>
+    </div>
+    <div class="ch-status" style="--cc:#ff6482">
+      <span class="dot" id="loveDot" style="--cc:#ff6482"></span>
+      <span id="loveStatus">Select a frequency above, then play</span>
+    </div>
+    <div class="note-box">528 Hz is promoted as the "love frequency" or "miracle tone." 432 Hz is an alternative tuning standard. 40 Hz has the strongest scientific backing — MIT research shows it may reduce amyloid plaques. 111 Hz is associated with beta-endorphin release and was used in ancient sacred architecture. Relaxation and focus effects are well-reported across all.</div>
+  </div>
+
+  <!-- Combined view -->
+  <div class="combined-section">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <span class="combined-label">Combined Wave View</span>
+      <div class="combined-legend" id="legend"></div>
+    </div>
+    <div class="combined-wrap"><canvas id="combinedCanvas"></canvas></div>
+  </div>
+
+  <!-- Fractal Visualizer -->
+  <span class="section-label">Fractal Visualizer</span>
+  <div class="fractal-section">
+    <div class="fractal-header">
+      <div>
+        <div class="fractal-title">Fra<em>ctal</em> Field</div>
+        <div class="fractal-subtitle">Reacts to active frequencies · Full manual control</div>
+      </div>
+      <span class="fractal-mode-badge" id="fractalBadge">Mandala</span>
+    </div>
+    <div class="fractal-wrap" id="fractalWrap">
+      <canvas id="fractalCanvas"></canvas>
+      <div class="fractal-hint">Tap to cycle mode</div>
+    </div>
+    <div class="fractal-controls">
+      <div class="fractal-select-wrap">
+        <select id="fractalSelect">
+          <option value="mandala">Mandala</option>
+          <option value="kaleid">Kaleidoscope</option>
+          <option value="sacred">Sacred Geometry ✦</option>
+          <option value="particles">Particles</option>
+        </select>
+        <span class="select-arrow">▾</span>
+      </div>
+      <button class="btn-fractal" id="btnRandom">⟳ Random</button>
+    </div>
+
+    <!-- 6 Control Sliders -->
+    <div class="fractal-sliders">
+      <div class="fsl">
+        <div class="fsl-row"><span class="fsl-label">Speed</span><span class="fsl-val" id="fSpeedVal">50%</span></div>
+        <input type="range" id="fSpeed" min="1" max="100" value="50">
+      </div>
+      <div class="fsl">
+        <div class="fsl-row"><span class="fsl-label">Zoom</span><span class="fsl-val" id="fZoomVal">50%</span></div>
+        <input type="range" id="fZoom" min="1" max="100" value="50">
+      </div>
+      <div class="fsl">
+        <div class="fsl-row"><span class="fsl-label">Complexity</span><span class="fsl-val" id="fComplexVal">50%</span></div>
+        <input type="range" id="fComplex" min="1" max="100" value="50">
+      </div>
+      <div class="fsl">
+        <div class="fsl-row"><span class="fsl-label">Color Shift</span><span class="fsl-val" id="fColorVal">0°</span></div>
+        <input type="range" id="fColor" min="0" max="360" value="0">
+      </div>
+      <div class="fsl">
+        <div class="fsl-row"><span class="fsl-label">Intensity</span><span class="fsl-val" id="fIntenseVal">50%</span></div>
+        <input type="range" id="fIntense" min="1" max="100" value="50">
+      </div>
+      <div class="fsl">
+        <div class="fsl-row"><span class="fsl-label">Symmetry</span><span class="fsl-val" id="fSymVal">8</span></div>
+        <input type="range" id="fSym" min="2" max="24" value="8">
+      </div>
+    </div>
+  </div>
+
+  <!-- Nature Sounds -->
+  <span class="section-label">Nature Sounds</span>
+  <div class="nature-channel">
+    <div class="nature-header">
+      <div>
+        <div class="nature-title">Na<em>ture</em> Sounds</div>
+        <div class="nature-subtitle">Layer ambient sounds under your frequencies</div>
+      </div>
+      <div class="nature-vol-wrap">
+        <span class="sl-label">Volume</span>
+        <span class="sl-val" id="natureVolVal" style="color:#00c8a0">40%</span>
+        <input type="range" id="natureVolSlider" min="0" max="100" value="40" style="--cc:#00c8a0;margin-top:4px;">
+      </div>
+    </div>
+    <div class="nature-grid" id="natureGrid"></div>
+    <div class="ch-status" style="--cc:#00c8a0;margin-top:4px;">
+      <span class="dot" id="natureDot" style="--cc:#00c8a0"></span>
+      <span id="natureStatus">Select a sound to layer</span>
+    </div>
+  </div>
+
+  <!-- QR Share -->
+  <span class="section-label">Share Frequency Stack</span>
+  <div class="qr-panel">
+    <div class="qr-header">
+      <div>
+        <div class="qr-title">QR <em>Share</em></div>
+        <div class="qr-subtitle">Generate a QR code with your current frequency settings</div>
+      </div>
+    </div>
+    <div class="qr-body">
+      <div class="qr-canvas-wrap"><canvas id="qrCanvas" width="200" height="200"></canvas></div>
+      <div class="qr-info">
+        <div class="qr-stack-preview" id="qrStackPreview">Press Generate to encode your current stack</div>
+        <button class="btn-qr" id="btnGenerateQR">Generate QR</button>
+        <button class="btn-qr btn-qr-sec" id="btnCopyLink">⎘ Copy Link</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+// ══════════════════════════════════════════════
+// DATA DEFINITIONS
+// ══════════════════════════════════════════════
+const WAVES = {
+  delta:{ name:'Delta', min:.5, max:4,   def:2,  color:'#00c8a0' },
+  theta:{ name:'Theta', min:4,  max:8,   def:6,  color:'#4a7aff' },
+  alpha:{ name:'Alpha', min:8,  max:13,  def:10, color:'#c87aff' },
+  beta: { name:'Beta',  min:13, max:30,  def:18, color:'#ffaa2a' },
+  gamma:{ name:'Gamma', min:30, max:100, def:40, color:'#ff4a6a' },
+};
+const WK = ['delta','theta','alpha','beta','gamma'];
+const WSYM = {delta:'δ',theta:'θ',alpha:'α',beta:'β',gamma:'γ'};
+const WRG  = {delta:'0.5–4',theta:'4–8',alpha:'8–13',beta:'13–30',gamma:'30–100'};
+const MODES = ['isochronic','binaural','hemisync'];
+const MLBL  = {isochronic:'Iso',binaural:'Bin',hemisync:'Hemi'};
+
+const SOLFEGGIO = [
+  { hz:174, name:'UT',  color:'#b04fff', desc:'Foundation · Pain relief' },
+  { hz:285, name:'RE',  color:'#7a6fff', desc:'Tissue healing' },
+  { hz:396, name:'MI',  color:'#4a7aff', desc:'Liberate fear & guilt' },
+  { hz:417, name:'FA',  color:'#00c8a0', desc:'Facilitate change' },
+  { hz:528, name:'SOL', color:'#ffcf2a', desc:'Love · DNA repair' },
+  { hz:639, name:'LA',  color:'#ff9a2a', desc:'Connecting relationships' },
+  { hz:741, name:'SI',  color:'#ff6a6a', desc:'Awakening intuition' },
+  { hz:852, name:'DO',  color:'#ff4aaa', desc:'Return to spiritual order' },
+  { hz:963, name:'ΩM',  color:'#c87aff', desc:'Crown · Pure consciousness' },
+];
+
+const LOVE_FREQS = [
+  { hz:40,   name:'40 Hz',  color:'#ff6482', desc:'Gamma · Neural coherence · MIT research' },
+  { hz:111,  name:'111 Hz', color:'#c87aff', desc:'Cell regeneration · Beta endorphins' },
+  { hz:432,  name:'432 Hz', color:'#ffaa2a', desc:'Alt tuning · Natural resonance' },
+  { hz:528,  name:'528 Hz', color:'#ffcf2a', desc:'Love tone · Emotional healing' },
+  { hz:639,  name:'639 Hz', color:'#ff9a2a', desc:'Heart chakra · Relationships' },
+];
+
+// ══════════════════════════════════════════════
+// AUDIO ENGINE — single shared AudioContext
+// ══════════════════════════════════════════════
+function hexRgb(hex){ return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)).join(','); }
+
+// One global AudioContext shared by all channels
+let GLOBAL_AC = null;
+
+function getAC(){
+  if(!GLOBAL_AC || GLOBAL_AC.state==='closed'){
+    GLOBAL_AC = new (window.AudioContext||window.webkitAudioContext)();
+  }
+  return GLOBAL_AC;
+}
+
+// Unlock audio on very first user tap anywhere — critical for mobile
+function unlockAudio(){
+  const ac = getAC();
+  if(ac.state==='suspended') ac.resume();
+}
+document.addEventListener('touchstart', unlockAudio, {once:true});
+document.addEventListener('mousedown',  unlockAudio, {once:true});
+
+class AudioChannel {
+  constructor(){ this.masterGain=null; this.nodes=[]; this.isoTimer=null; }
+  get AC(){ return getAC(); }
+  track(n){ this.nodes.push(n); return n; }
+  async init(volume){
+    const ac = getAC();
+    if(ac.state==='suspended') await ac.resume();
+    this.masterGain = ac.createGain();
+    this.masterGain.gain.value = volume;
+    this.masterGain.connect(ac.destination);
+  }
+  pureTone(hz){
+    const osc = this.track(this.AC.createOscillator());
+    osc.type='sine'; osc.frequency.value=hz;
+    osc.connect(this.masterGain); osc.start();
+  }
+  isochronic(carrierHz, beatFreq){
+    const osc=this.track(this.AC.createOscillator());
+    const gn=this.track(this.AC.createGain());
+    osc.type='sine'; osc.frequency.value=carrierHz;
+    gn.gain.value=0; osc.connect(gn); gn.connect(this.masterGain); osc.start();
+    const sched=()=>{
+      if(!this.masterGain) return;
+      const ac=this.AC;
+      const period=1/beatFreq, half=period/2, now=ac.currentTime;
+      let t=now;
+      while(t<now+2){ gn.gain.setTargetAtTime(1,t,.004); gn.gain.setTargetAtTime(0,t+half,.004); t+=period; }
+      this.isoTimer=setTimeout(sched,1500);
+    };
+    sched();
+  }
+  binaural(carrierHz, beatFreq){
+    const mA=this.track(this.AC.createOscillator()), mB=this.track(this.AC.createOscillator());
+    const pL=this.track(this.AC.createStereoPanner()), pR=this.track(this.AC.createStereoPanner());
+    mA.type=mB.type='sine'; mA.frequency.value=carrierHz; mB.frequency.value=carrierHz+beatFreq;
+    pL.pan.value=-1; pR.pan.value=1;
+    mA.connect(pL); pL.connect(this.masterGain); mB.connect(pR); pR.connect(this.masterGain);
+    mA.start(); mB.start();
+  }
+  hemisync(carrierHz, beatFreq){
+    this.binaural(carrierHz, beatFreq);
+    const a2=this.track(this.AC.createOscillator()), b2=this.track(this.AC.createOscillator());
+    const pL2=this.track(this.AC.createStereoPanner()), pR2=this.track(this.AC.createStereoPanner());
+    const gA=this.track(this.AC.createGain()), gB=this.track(this.AC.createGain());
+    a2.type=b2.type='sine'; a2.frequency.value=carrierHz+5; b2.frequency.value=carrierHz+5+beatFreq;
+    pL2.pan.value=-1; pR2.pan.value=1; gA.gain.value=gB.gain.value=.6;
+    a2.connect(gA); gA.connect(pL2); pL2.connect(this.masterGain);
+    b2.connect(gB); gB.connect(pR2); pR2.connect(this.masterGain);
+    a2.start(); b2.start();
+  }
+  setVolume(v){ if(this.masterGain) this.masterGain.gain.setTargetAtTime(v,this.AC.currentTime,.02); }
+  stop(){
+    clearTimeout(this.isoTimer); this.isoTimer=null;
+    this.nodes.forEach(n=>{ try{n.stop&&n.stop();n.disconnect();}catch(e){} });
+    this.nodes=[];
+    // Disconnect masterGain but do NOT close the shared AudioContext
+    if(this.masterGain){try{this.masterGain.disconnect();}catch(e){} this.masterGain=null;}
+  }
+}
+
+// ══════════════════════════════════════════════
+// BRAINWAVE CHANNELS (Ch1 & Ch2)
+// ══════════════════════════════════════════════
+const CH = [
+  {id:0,waveKey:'theta',beatFreq:6,carrierHz:200,volume:.6,waveAmp:.8,audioMode:'isochronic',isPlaying:false,phase:0,audio:null},
+  {id:1,waveKey:'alpha',beatFreq:10,carrierHz:250,volume:.6,waveAmp:.8,audioMode:'isochronic',isPlaying:false,phase:0,audio:null},
+];
+
+const channelsEl=document.getElementById('channels');
+CH.forEach(ch=>{
+  const div=document.createElement('div');
+  div.className='channel'; div.id=`ch${ch.id}`;
+  div.style.setProperty('--cc',WAVES[ch.waveKey].color);
+  div.innerHTML=`
+    <div class="ch-header">
+      <span class="ch-label">Channel ${ch.id+1}</span>
+      <span class="ch-name" id="chName${ch.id}">${WAVES[ch.waveKey].name}</span>
+    </div>
+    <div class="wave-tabs" id="tabs${ch.id}">
+      ${WK.map(k=>`<div class="wave-tab ${k===ch.waveKey?'active':''}" data-wave="${k}" style="--tc:${WAVES[k].color}">
+        <span class="wn">${WSYM[k]}</span><span class="wr">${WRG[k]}</span></div>`).join('')}
+    </div>
+    <div class="canvas-wrap"><canvas id="canvas${ch.id}" style="height:100px"></canvas>
+      <div class="canvas-overlay">
+        <span class="freq-pill" id="freqPill${ch.id}">${ch.beatFreq.toFixed(1)} Hz</span>
+        <span class="mode-pill" id="modePill${ch.id}">Isochronic</span>
+      </div>
+    </div>
+    <div class="sliders">
+      <div class="sl"><div class="sl-row"><span class="sl-label">Frequency</span><span class="sl-val" id="freqVal${ch.id}">${ch.beatFreq.toFixed(1)} Hz</span></div>
+        <input type="range" id="freqSlider${ch.id}" min="${WAVES[ch.waveKey].min}" max="${WAVES[ch.waveKey].max}" step=".1" value="${ch.beatFreq}"></div>
+      <div class="sl"><div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="volVal${ch.id}">60%</span></div>
+        <input type="range" id="volSlider${ch.id}" min="0" max="100" value="60"></div>
+      <div class="sl"><div class="sl-row"><span class="sl-label">Carrier</span><span class="sl-val" id="carrierVal${ch.id}">${ch.carrierHz} Hz</span></div>
+        <input type="range" id="carrierSlider${ch.id}" min="80" max="500" step="5" value="${ch.carrierHz}"></div>
+      <div class="sl"><div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="ampVal${ch.id}">80%</span></div>
+        <input type="range" id="ampSlider${ch.id}" min="10" max="100" value="80"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="playBtn${ch.id}">▶ Play</button>
+      <button class="btn btn-mode" id="modeBtn${ch.id}">Mode: Iso</button>
+    </div>
+    <div class="ch-status"><span class="dot" id="dot${ch.id}"></span><span id="statusText${ch.id}">Idle</span></div>`;
+  channelsEl.appendChild(div);
+});
+
+CH.forEach(ch=>{
+  const i=ch.id;
+  document.getElementById(`tabs${i}`).addEventListener('click',e=>{
+    const t=e.target.closest('.wave-tab'); if(!t) return;
+    ch.waveKey=t.dataset.wave;
+    const w=WAVES[ch.waveKey];
+    document.getElementById(`ch${i}`).style.setProperty('--cc',w.color);
+    document.getElementById(`chName${i}`).textContent=w.name;
+    const fs=document.getElementById(`freqSlider${i}`);
+    fs.min=w.min; fs.max=w.max; ch.beatFreq=w.def; fs.value=ch.beatFreq;
+    updFreq(ch);
+    document.querySelectorAll(`#tabs${i} .wave-tab`).forEach(x=>x.classList.toggle('active',x.dataset.wave===ch.waveKey));
+    if(ch.isPlaying) restartCh(ch);
+    updateLegend();
+  });
+  document.getElementById(`freqSlider${i}`).addEventListener('input',function(){
+    ch.beatFreq=parseFloat(this.value); updFreq(ch); if(ch.isPlaying) restartCh(ch);
+  });
+  document.getElementById(`volSlider${i}`).addEventListener('input',function(){
+    ch.volume=this.value/100; document.getElementById(`volVal${i}`).textContent=this.value+'%';
+    if(ch.audio) ch.audio.setVolume(ch.volume);
+  });
+  document.getElementById(`carrierSlider${i}`).addEventListener('input',function(){
+    ch.carrierHz=parseInt(this.value); document.getElementById(`carrierVal${i}`).textContent=ch.carrierHz+' Hz';
+    if(ch.isPlaying) restartCh(ch);
+  });
+  document.getElementById(`ampSlider${i}`).addEventListener('input',function(){
+    ch.waveAmp=this.value/100; document.getElementById(`ampVal${i}`).textContent=this.value+'%';
+  });
+  document.getElementById(`playBtn${i}`).addEventListener('click',async()=>{
+    const btn=document.getElementById(`playBtn${i}`);
+    if(!ch.isPlaying){
+      ch.audio=new AudioChannel(); await ch.audio.init(ch.volume);
+      playChMode(ch); ch.isPlaying=true;
+      btn.textContent='⏹ Stop'; btn.classList.add('playing');
+      document.getElementById(`ch${i}`).classList.add('active');
+      document.getElementById(`dot${i}`).classList.add('live');
+      updStatus(ch);
+    } else {
+      ch.audio.stop(); ch.audio=null; ch.isPlaying=false;
+      btn.textContent='▶ Play'; btn.classList.remove('playing');
+      document.getElementById(`ch${i}`).classList.remove('active');
+      document.getElementById(`dot${i}`).classList.remove('live');
+      document.getElementById(`statusText${i}`).textContent='Idle';
+    }
+  });
+  document.getElementById(`modeBtn${i}`).addEventListener('click',()=>{
+    ch.audioMode=MODES[(MODES.indexOf(ch.audioMode)+1)%MODES.length];
+    document.getElementById(`modeBtn${i}`).textContent='Mode: '+MLBL[ch.audioMode];
+    document.getElementById(`modeBtn${i}`).classList.toggle('on',ch.audioMode!=='isochronic');
+    document.getElementById(`modePill${i}`).textContent={isochronic:'Isochronic',binaural:'Binaural',hemisync:'Hemi-Sync'}[ch.audioMode];
+    if(ch.isPlaying) restartCh(ch);
+  });
+});
+
+function updFreq(ch){
+  const v=ch.beatFreq.toFixed(1);
+  document.getElementById(`freqVal${ch.id}`).textContent=v+' Hz';
+  document.getElementById(`freqPill${ch.id}`).textContent=v+' Hz';
+}
+function updStatus(ch){
+  const ml={isochronic:'Isochronic',binaural:'Binaural',hemisync:'Hemi-Sync'}[ch.audioMode];
+  document.getElementById(`statusText${ch.id}`).textContent=`${WAVES[ch.waveKey].name} · ${ch.beatFreq.toFixed(1)} Hz · ${ml}`;
+}
+function playChMode(ch){
+  if(ch.audioMode==='binaural') ch.audio.binaural(ch.carrierHz,ch.beatFreq);
+  else if(ch.audioMode==='hemisync') ch.audio.hemisync(ch.carrierHz,ch.beatFreq);
+  else ch.audio.isochronic(ch.carrierHz,ch.beatFreq);
+}
+async function restartCh(ch){
+  if(!ch.isPlaying) return;
+  ch.audio.stop(); ch.audio=new AudioChannel(); await ch.audio.init(ch.volume);
+  playChMode(ch); updStatus(ch);
+}
+
+// ══════════════════════════════════════════════
+// SOLFEGGIO CHANNEL
+// ══════════════════════════════════════════════
+let solfState={selectedHz:528,isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#ffcf2a'};
+
+const solfGrid=document.getElementById('solfGrid');
+SOLFEGGIO.forEach(s=>{
+  const btn=document.createElement('div');
+  btn.className='solf-btn'+(s.hz===solfState.selectedHz?' active':'');
+  btn.style.setProperty('--bc',s.color);
+  btn.innerHTML=`<span class="sb-hz">${s.hz}</span><span class="sb-name">${s.name}</span><span class="sb-desc">${s.desc}</span>`;
+  btn.addEventListener('click',()=>{
+    solfState.selectedHz=s.hz; solfState.color=s.color;
+    document.querySelectorAll('.solf-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('solfPill').textContent=s.hz+' Hz';
+    document.getElementById('solfPill').style.color=s.color;
+    document.getElementById('solfStatus').textContent=`${s.hz} Hz — ${s.name} — ${s.desc}`;
+    if(solfState.isPlaying) restartSolf();
+  });
+  solfGrid.appendChild(btn);
+});
+document.getElementById('solfPill').textContent='528 Hz';
+
+document.getElementById('solfVolSlider').addEventListener('input',function(){
+  solfState.volume=this.value/100; document.getElementById('solfVolVal').textContent=this.value+'%';
+  if(solfState.audio) solfState.audio.setVolume(solfState.volume);
+});
+document.getElementById('solfAmpSlider').addEventListener('input',function(){
+  solfState.waveAmp=this.value/100; document.getElementById('solfAmpVal').textContent=this.value+'%';
+});
+document.getElementById('solfPlayBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('solfPlayBtn');
+  if(!solfState.isPlaying){
+    solfState.audio=new AudioChannel(); await solfState.audio.init(solfState.volume);
+    solfState.audio.pureTone(solfState.selectedHz);
+    solfState.isPlaying=true; btn.textContent='⏹ Stop'; btn.classList.add('playing');
+    document.getElementById('solfChannel').classList.add('active');
+    document.getElementById('solfDot').classList.add('live');
+    document.getElementById('solfStatus').textContent=`Playing ${solfState.selectedHz} Hz pure tone`;
+  } else {
+    solfState.audio.stop(); solfState.audio=null; solfState.isPlaying=false;
+    btn.textContent='▶ Play'; btn.classList.remove('playing');
+    document.getElementById('solfChannel').classList.remove('active');
+    document.getElementById('solfDot').classList.remove('live');
+    document.getElementById('solfStatus').textContent='Select a frequency above, then play';
+  }
+});
+async function restartSolf(){
+  if(!solfState.isPlaying) return;
+  solfState.audio.stop(); solfState.audio=new AudioChannel();
+  await solfState.audio.init(solfState.volume);
+  solfState.audio.pureTone(solfState.selectedHz);
+}
+
+// ══════════════════════════════════════════════
+// LOVE FREQUENCY CHANNEL
+// ══════════════════════════════════════════════
+let loveState={selectedHz:528,isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#ffcf2a'};
+
+const loveGrid=document.getElementById('loveGrid');
+LOVE_FREQS.forEach(f=>{
+  const btn=document.createElement('div');
+  btn.className='love-preset'+(f.hz===528?' active':'');
+  btn.innerHTML=`<span class="lp-hz">${f.hz}</span><span class="lp-name">${f.name}</span><span class="lp-desc">${f.desc}</span>`;
+  btn.addEventListener('click',()=>{
+    loveState.selectedHz=f.hz; loveState.color=f.color;
+    document.querySelectorAll('.love-preset').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('lovePill').textContent=f.hz+' Hz';
+    document.getElementById('lovePill').style.color=f.color;
+    document.getElementById('loveStatus').textContent=`${f.hz} Hz — ${f.desc}`;
+    if(loveState.isPlaying) restartLove();
+  });
+  loveGrid.appendChild(btn);
+});
+document.getElementById('lovePill').textContent='528 Hz';
+
+document.getElementById('loveVolSlider').addEventListener('input',function(){
+  loveState.volume=this.value/100; document.getElementById('loveVolVal').textContent=this.value+'%';
+  if(loveState.audio) loveState.audio.setVolume(loveState.volume);
+});
+document.getElementById('loveAmpSlider').addEventListener('input',function(){
+  loveState.waveAmp=this.value/100; document.getElementById('loveAmpVal').textContent=this.value+'%';
+});
+document.getElementById('lovePlayBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('lovePlayBtn');
+  if(!loveState.isPlaying){
+    loveState.audio=new AudioChannel(); await loveState.audio.init(loveState.volume);
+    loveState.audio.pureTone(loveState.selectedHz);
+    loveState.isPlaying=true; btn.textContent='⏹ Stop'; btn.classList.add('playing');
+    document.getElementById('loveChannel').classList.add('active');
+    document.getElementById('loveDot').classList.add('live');
+    document.getElementById('loveStatus').textContent=`Playing ${loveState.selectedHz} Hz pure tone`;
+  } else {
+    loveState.audio.stop(); loveState.audio=null; loveState.isPlaying=false;
+    btn.textContent='▶ Play'; btn.classList.remove('playing');
+    document.getElementById('loveChannel').classList.remove('active');
+    document.getElementById('loveDot').classList.remove('live');
+    document.getElementById('loveStatus').textContent='Select a frequency above, then play';
+  }
+});
+async function restartLove(){
+  if(!loveState.isPlaying) return;
+  loveState.audio.stop(); loveState.audio=new AudioChannel();
+  await loveState.audio.init(loveState.volume);
+  loveState.audio.pureTone(loveState.selectedHz);
+}
+
+// ══════════════════════════════════════════════
+// CANVAS ENGINE
+// ══════════════════════════════════════════════
+function resizeCanvas(el,cx){
+  const dpr=window.devicePixelRatio||1;
+  el.width=el.offsetWidth*dpr; el.height=el.offsetHeight*dpr;
+  cx.scale(dpr,dpr);
+}
+
+const allCanvases=[];
+function regCanvas(id){ const el=document.getElementById(id),cx=el.getContext('2d'); resizeAll2(el,cx); allCanvases.push({el,cx}); return {el,cx}; }
+function resizeAll2(el,cx){ const dpr=window.devicePixelRatio||1; el.width=el.offsetWidth*dpr; el.height=el.offsetHeight*dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
+window.addEventListener('resize',()=>allCanvases.forEach(({el,cx})=>resizeAll2(el,cx)));
+
+const ch0canvas=regCanvas('canvas0');
+const ch1canvas=regCanvas('canvas1');
+const solfCv=regCanvas('solfCanvas');
+const loveCv=regCanvas('loveCanvas');
+const combCv=regCanvas('combinedCanvas');
+
+function drawWave(cx,W,H,phase,freq,color,amp,alpha){
+  const rgb=hexRgb(color), cy=H/2;
+  const a=cy*.6*amp, cycles=Math.min(freq/1.5,12);
+  for(let g=2;g>=0;g--){
+    cx.beginPath(); cx.globalAlpha=.02+g*.02; cx.strokeStyle=color; cx.lineWidth=(3-g)*2;
+    for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+    cx.stroke();
+  }
+  cx.beginPath(); cx.globalAlpha=alpha||1;
+  const gr=cx.createLinearGradient(0,0,W,0);
+  gr.addColorStop(0,`rgba(${rgb},.1)`); gr.addColorStop(.3,color); gr.addColorStop(.7,color); gr.addColorStop(1,`rgba(${rgb},.1)`);
+  cx.strokeStyle=gr; cx.lineWidth=alpha?1.5:2; cx.shadowColor=color; cx.shadowBlur=8;
+  for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+  cx.stroke(); cx.shadowBlur=0; cx.globalAlpha=1;
+}
+
+function drawPureTone(cx,W,H,phase,hz,color,amp){
+  // For pure tones (solfeggio/love) show a clean sine at scaled visual rate
+  const rgb=hexRgb(color), cy=H/2;
+  const a=cy*.65*amp;
+  const cycles=5; // fixed visual cycles for pure tone
+  for(let g=2;g>=0;g--){
+    cx.beginPath(); cx.globalAlpha=.02+g*.025; cx.strokeStyle=color; cx.lineWidth=(3-g)*2;
+    for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+    cx.stroke();
+  }
+  cx.beginPath(); cx.globalAlpha=1;
+  const gr=cx.createLinearGradient(0,0,W,0);
+  const rgb2=hexRgb(color);
+  gr.addColorStop(0,`rgba(${rgb2},.1)`); gr.addColorStop(.3,color); gr.addColorStop(.7,color); gr.addColorStop(1,`rgba(${rgb2},.1)`);
+  cx.strokeStyle=gr; cx.lineWidth=2; cx.shadowColor=color; cx.shadowBlur=10;
+  for(let x=0;x<=W;x++){const y=cy-Math.sin((x/W)*cycles*Math.PI*2+phase)*a; x===0?cx.moveTo(x,y):cx.lineTo(x,y);}
+  cx.stroke(); cx.shadowBlur=0; cx.globalAlpha=1;
+}
+
+function clearCv(cx,W,H){ cx.clearRect(0,0,W,H); }
+function gridLine(cx,W,H,color){
+  cx.beginPath(); cx.globalAlpha=.05; cx.strokeStyle=color; cx.lineWidth=1; cx.setLineDash([3,9]);
+  cx.moveTo(0,H/2); cx.lineTo(W,H/2); cx.stroke(); cx.setLineDash([]); cx.globalAlpha=1;
+}
+
+function updateLegend(){
+  const leg=document.getElementById('legend'); leg.innerHTML='';
+  const items=[
+    {color:WAVES[CH[0].waveKey].color, label:`Ch1: ${WAVES[CH[0].waveKey].name}`},
+    {color:WAVES[CH[1].waveKey].color, label:`Ch2: ${WAVES[CH[1].waveKey].name}`},
+    {color:solfState.color, label:`Solf: ${solfState.selectedHz}Hz`},
+    {color:loveState.color, label:`Love: ${loveState.selectedHz}Hz`},
+  ];
+  items.forEach(it=>{
+    const d=document.createElement('div'); d.className='legend-item';
+    d.innerHTML=`<div class="legend-dot" style="background:${it.color}"></div><span>${it.label}</span>`;
+    leg.appendChild(d);
+  });
+}
+updateLegend();
+
+function animate(){
+  // Ch0
+  {const {el,cx}=ch0canvas,ch=CH[0],W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,WAVES[ch.waveKey].color);
+  drawWave(cx,W,H,ch.phase,ch.beatFreq,WAVES[ch.waveKey].color,ch.waveAmp,1);
+  ch.phase+=ch.isPlaying?ch.beatFreq*.01:.005;}
+
+  // Ch1
+  {const {el,cx}=ch1canvas,ch=CH[1],W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,WAVES[ch.waveKey].color);
+  drawWave(cx,W,H,ch.phase,ch.beatFreq,WAVES[ch.waveKey].color,ch.waveAmp,1);
+  ch.phase+=ch.isPlaying?ch.beatFreq*.01:.005;}
+
+  // Solfeggio
+  {const {el,cx}=solfCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,solfState.color);
+  drawPureTone(cx,W,H,solfState.phase,solfState.selectedHz,solfState.color,solfState.waveAmp);
+  solfState.phase+=solfState.isPlaying?.04:.005;}
+
+  // Love
+  {const {el,cx}=loveCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,loveState.color);
+  drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp);
+  loveState.phase+=loveState.isPlaying?.04:.005;}
+
+  // Combined
+  {const {el,cx}=combCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,'#4a7aff');
+  drawWave(cx,W,H,CH[0].phase,CH[0].beatFreq,WAVES[CH[0].waveKey].color,CH[0].waveAmp,.7);
+  drawWave(cx,W,H,CH[1].phase,CH[1].beatFreq,WAVES[CH[1].waveKey].color,CH[1].waveAmp,.7);
+  drawPureTone(cx,W,H,solfState.phase,solfState.selectedHz,solfState.color,solfState.waveAmp*.5);
+  drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp*.5);}
+
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ══════════════════════════════════════════════
+// FRACTAL VISUALIZER
+// ══════════════════════════════════════════════
+const fractalEl = document.getElementById('fractalCanvas');
+const fractalCx = fractalEl.getContext('2d');
+const FMODES = ['mandala','kaleid','sacred','particles'];
+let fractalMode = 'mandala';
+let fractalT = 0;
+
+// ── Manual controls ───────────────────────────
+let fControls = { speed:0.5, zoom:1.0, complexity:0.5, colorShift:0, intensity:0.5, symmetry:8 };
+
+document.getElementById('fSpeed').addEventListener('input', function(){
+  fControls.speed = this.value/100;
+  document.getElementById('fSpeedVal').textContent = this.value+'%';
+});
+document.getElementById('fZoom').addEventListener('input', function(){
+  fControls.zoom = 0.4 + (this.value/100)*1.6;
+  document.getElementById('fZoomVal').textContent = this.value+'%';
+});
+document.getElementById('fComplex').addEventListener('input', function(){
+  fControls.complexity = this.value/100;
+  document.getElementById('fComplexVal').textContent = this.value+'%';
+});
+document.getElementById('fColor').addEventListener('input', function(){
+  fControls.colorShift = parseInt(this.value);
+  document.getElementById('fColorVal').textContent = this.value+'°';
+});
+document.getElementById('fIntense').addEventListener('input', function(){
+  fControls.intensity = this.value/100;
+  document.getElementById('fIntenseVal').textContent = this.value+'%';
+});
+document.getElementById('fSym').addEventListener('input', function(){
+  fControls.symmetry = parseInt(this.value);
+  document.getElementById('fSymVal').textContent = this.value;
+});
+
+function resizeFractal(){
+  const dpr = window.devicePixelRatio||1;
+  fractalEl.width  = fractalEl.offsetWidth  * dpr;
+  fractalEl.height = fractalEl.offsetHeight * dpr;
+  fractalCx.setTransform(dpr,0,0,dpr,0,0);
+}
+resizeFractal();
+window.addEventListener('resize', resizeFractal);
+
+// Get energy from active channels — drives visualizer intensity
+function getEnergy(){
+  let e = 0, count = 0;
+  if(CH[0].isPlaying){ e += CH[0].beatFreq / 100; count++; }
+  if(CH[1].isPlaying){ e += CH[1].beatFreq / 100; count++; }
+  if(solfState.isPlaying){ e += solfState.selectedHz / 1000; count++; }
+  if(loveState.isPlaying){ e += loveState.selectedHz / 1000; count++; }
+  const base = count > 0 ? Math.min(0.3 + e, 1.2) : 0.4;
+  return base * (0.4 + fControls.intensity * 1.2);
+}
+
+function shiftHex(hex, degrees){
+  if(degrees === 0) return hex;
+  const r=parseInt(hex.slice(1,3),16)/255;
+  const g=parseInt(hex.slice(3,5),16)/255;
+  const b=parseInt(hex.slice(5,7),16)/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b), d=max-min;
+  let h=0,s=max===0?0:d/max,v=max;
+  if(d!==0){
+    if(max===r) h=((g-b)/d)%6;
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h=h*60; if(h<0) h+=360;
+  }
+  h=(h+degrees)%360; if(h<0) h+=360;
+  const c=v*s, x=c*(1-Math.abs((h/60)%2-1)), m=v-c;
+  let rr,gg,bb;
+  if(h<60){rr=c;gg=x;bb=0;}else if(h<120){rr=x;gg=c;bb=0;}
+  else if(h<180){rr=0;gg=c;bb=x;}else if(h<240){rr=0;gg=x;bb=c;}
+  else if(h<300){rr=x;gg=0;bb=c;}else{rr=c;gg=0;bb=x;}
+  const to2=n=>Math.round((n+m)*255).toString(16).padStart(2,'0');
+  return '#'+to2(rr)+to2(gg)+to2(bb);
+}
+
+// Get dominant color from active channels
+function getDominantColor(){
+  let base;
+  if(CH[0].isPlaying) base=WAVES[CH[0].waveKey].color;
+  else if(CH[1].isPlaying) base=WAVES[CH[1].waveKey].color;
+  else if(solfState.isPlaying) base=solfState.color;
+  else if(loveState.isPlaying) base=loveState.color;
+  else base='#4a7aff';
+  return shiftHex(base, fControls.colorShift);
+}
+
+function getSecondColor(){
+  let base;
+  if(CH[1].isPlaying) base=WAVES[CH[1].waveKey].color;
+  else if(solfState.isPlaying) base=solfState.color;
+  else if(CH[0].isPlaying) base=WAVES[CH[0].waveKey].color;
+  else base='#c87aff';
+  return shiftHex(base, (fControls.colorShift+120)%360);
+}
+
+// ── Mandala ──────────────────────────────────
+function drawMandala(t, energy){
+  const W = fractalEl.offsetWidth, H = fractalEl.offsetHeight;
+  const cx = fractalCx;
+  const cx2 = W/2, cy2 = H/2;
+  const col1 = getDominantColor(), col2 = getSecondColor();
+
+  cx.fillStyle = `rgba(3,5,8,0.18)`;
+  cx.fillRect(0,0,W,H);
+
+  const arms = Math.max(2, Math.round(fControls.symmetry));
+  const layers = Math.max(2, Math.round(2 + fControls.complexity * 6));
+  const zoom = fControls.zoom;
+
+  for(let layer = 0; layer < layers; layer++){
+    const r = (50 + layer * 32) * energy * zoom;
+    const spin = t * (0.3 + layer * 0.15) * (layer%2===0?1:-1);
+    const pts = arms * (layer+1);
+
+    for(let i=0; i<pts; i++){
+      const angle = (i/pts)*Math.PI*2 + spin;
+      const wobble = Math.sin(t*1.2 + layer*0.7 + i*0.4)*10*energy;
+      const x = cx2 + Math.cos(angle)*(r+wobble);
+      const y = cy2 + Math.sin(angle)*(r+wobble);
+
+      const nextAngle = ((i+1)/pts)*Math.PI*2 + spin;
+      const nWobble = Math.sin(t*1.2 + layer*0.7 + (i+1)*0.4)*10*energy;
+      const nx = cx2 + Math.cos(nextAngle)*(r+nWobble);
+      const ny = cy2 + Math.sin(nextAngle)*(r+nWobble);
+
+      cx.beginPath();
+      cx.moveTo(cx2, cy2);
+      cx.lineTo(x, y);
+      cx.lineTo(nx, ny);
+      cx.closePath();
+
+      const alpha = (0.06 + layer*0.025) * energy;
+      cx.fillStyle = col2 + Math.min(255,Math.floor(alpha*255)).toString(16).padStart(2,'0');
+      cx.fill();
+
+      // Petal outline
+      cx.beginPath();
+      cx.arc(x, y, 2+layer*1.2*energy, 0, Math.PI*2);
+      cx.fillStyle = col1 + 'aa';
+      cx.fill();
+    }
+
+    // Ring
+    cx.beginPath();
+    cx.arc(cx2, cy2, r, 0, Math.PI*2);
+    cx.strokeStyle = col1 + '22';
+    cx.lineWidth = 1;
+    cx.stroke();
+  }
+
+  // Center glow
+  const grd = cx.createRadialGradient(cx2,cy2,0,cx2,cy2,55*energy*zoom);
+  grd.addColorStop(0, col1+'88');
+  grd.addColorStop(0.5, col2+'33');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  cx.beginPath();
+  cx.arc(cx2,cy2,55*energy*zoom,0,Math.PI*2);
+  cx.fillStyle = grd;
+  cx.fill();
+}
+
+// ── Plasma ───────────────────────────────────
+function drawPlasma(t, energy){
+  const W = fractalEl.offsetWidth, H = fractalEl.offsetHeight;
+  const cx = fractalCx;
+  const col1 = getDominantColor(), col2 = getSecondColor();
+
+  // Build plasma field with imageData for speed
+  const idata = cx.createImageData(W, H);
+  const data = idata.data;
+  const scale = 0.008 / energy;
+
+  const r1 = parseInt(col1.slice(1,3),16);
+  const g1 = parseInt(col1.slice(3,5),16);
+  const b1 = parseInt(col1.slice(5,7),16);
+  const r2 = parseInt(col2.slice(1,3),16);
+  const g2 = parseInt(col2.slice(3,5),16);
+  const b2 = parseInt(col2.slice(5,7),16);
+
+  // Downsample for performance — fill 4x4 blocks
+  const step = 4;
+  for(let y=0; y<H; y+=step){
+    for(let x=0; x<W; x+=step){
+      const v1 = Math.sin(x*scale + t*0.7);
+      const v2 = Math.sin(y*scale + t*0.5);
+      const v3 = Math.sin((x+y)*scale*0.5 + t*0.9);
+      const v4 = Math.sin(Math.sqrt(x*x+y*y)*scale*0.3 + t*0.4);
+      const v  = (v1+v2+v3+v4)/4;
+      const n  = (v+1)/2;
+      const m  = 1-n;
+
+      const r = Math.floor(r1*n + r2*m);
+      const g = Math.floor(g1*n + g2*m);
+      const b = Math.floor(b1*n + b2*m);
+
+      for(let dy=0;dy<step&&y+dy<H;dy++){
+        for(let dx=0;dx<step&&x+dx<W;dx++){
+          const idx=((y+dy)*W+(x+dx))*4;
+          data[idx]  =r; data[idx+1]=g; data[idx+2]=b; data[idx+3]=220;
+        }
+      }
+    }
+  }
+  cx.putImageData(idata,0,0);
+
+  // Overlay glow orbs
+  for(let i=0;i<4;i++){
+    const ox = W/2 + Math.cos(t*0.4+i*Math.PI/2)*W*0.28*energy;
+    const oy = H/2 + Math.sin(t*0.3+i*Math.PI/2)*H*0.28*energy;
+    const orb = cx.createRadialGradient(ox,oy,0,ox,oy,60*energy);
+    orb.addColorStop(0, i%2===0 ? col1+'55' : col2+'55');
+    orb.addColorStop(1,'rgba(0,0,0,0)');
+    cx.beginPath(); cx.arc(ox,oy,60*energy,0,Math.PI*2);
+    cx.fillStyle=orb; cx.fill();
+  }
+}
+
+// ── Kaleidoscope ─────────────────────────────
+function drawKaleid(t, energy){
+  const W = fractalEl.offsetWidth, H = fractalEl.offsetHeight;
+  const cx = fractalCx;
+  const cx2=W/2, cy2=H/2;
+  const col1=getDominantColor(), col2=getSecondColor();
+
+  cx.fillStyle='rgba(3,5,8,0.22)';
+  cx.fillRect(0,0,W,H);
+
+  const segments = Math.max(2, Math.round(fControls.symmetry));
+  const angle = (Math.PI*2)/segments;
+  const zoom = fControls.zoom;
+  const layers = Math.max(2, Math.round(3 + fControls.complexity * 5));
+
+  for(let s=0; s<segments; s++){
+    cx.save();
+    cx.translate(cx2,cy2);
+    cx.rotate(s*angle + t*0.1);
+
+    // Draw one segment, mirrored
+    for(let mirror=0; mirror<2; mirror++){
+      cx.save();
+      if(mirror===1) cx.scale(1,-1);
+
+      for(let i=0; i<layers; i++){
+        const r  = (25 + i*26*energy) * zoom;
+        const r2b = r + 18*energy*zoom;
+        const a1 = Math.sin(t*0.7+i*0.5)*angle*0.4;
+        const a2 = angle/2 + Math.cos(t*0.5+i*0.3)*angle*0.2;
+
+        const x1=Math.cos(a1)*r, y1=Math.sin(a1)*r;
+        const x2=Math.cos(a2)*r2b, y2=Math.sin(a2)*r2b;
+        const x3=Math.cos(a1)*r2b, y3=Math.sin(a1)*r2b;
+
+        const grad=cx.createLinearGradient(x1,y1,x3,y3);
+        grad.addColorStop(0, col1+(Math.min(255,Math.floor((0.15+i*0.05)*255))).toString(16).padStart(2,'0'));
+        grad.addColorStop(1, col2+(Math.floor(0.08*255)).toString(16).padStart(2,'0'));
+
+        cx.beginPath();
+        cx.moveTo(0,0);
+        cx.lineTo(x1,y1);
+        cx.lineTo(x2,y2);
+        cx.lineTo(x3,y3);
+        cx.closePath();
+        cx.fillStyle=grad;
+        cx.fill();
+
+        // Highlight edge
+        cx.beginPath();
+        cx.moveTo(x1,y1);
+        cx.lineTo(x2,y2);
+        cx.strokeStyle=col1+'44';
+        cx.lineWidth=0.8;
+        cx.stroke();
+      }
+      cx.restore();
+    }
+    cx.restore();
+  }
+
+  // Center jewel
+  for(let r=30;r>0;r-=6){
+    const jGrd=cx.createRadialGradient(cx2,cy2,0,cx2,cy2,r*energy);
+    jGrd.addColorStop(0,'rgba(255,255,255,0.2)');
+    jGrd.addColorStop(0.4,col1+'66');
+    jGrd.addColorStop(1,'rgba(0,0,0,0)');
+    cx.beginPath();cx.arc(cx2,cy2,r*energy,0,Math.PI*2);
+    cx.fillStyle=jGrd;cx.fill();
+  }
+}
+
+// ── Main fractal loop ─────────────────────────
+function fractalLoop(){
+  const energy = getEnergy();
+  const anyPlaying = CH[0].isPlaying||CH[1].isPlaying||solfState.isPlaying||loveState.isPlaying;
+  const speed = (anyPlaying ? 0.018*(1+energy*0.3) : 0.005) * (0.1+fControls.speed*1.8);
+  fractalT += speed;
+
+  if(fractalMode==='mandala')         drawMandala(fractalT, energy);
+  else if(fractalMode==='kaleid')     drawKaleid(fractalT, energy);
+  else if(fractalMode==='sacred')     drawSacred(fractalT, energy);
+  else if(fractalMode==='particles')  drawParticles(fractalT, energy);
+  else                                drawMandala(fractalT, energy);
+
+  requestAnimationFrame(fractalLoop);
+}
+fractalLoop();
+
+function setFractalMode(mode){
+  fractalMode = mode;
+  const labels={mandala:'Mandala',kaleid:'Kaleidoscope',sacred:'Sacred Geometry',particles:'Particles'};
+  document.getElementById('fractalBadge').textContent = labels[mode]||mode;
+  document.getElementById('fractalSelect').value = mode;
+}
+
+// ── Mode dropdown ─────────────────────────────
+document.getElementById('fractalSelect').addEventListener('change', function(){
+  const mode = this.value;
+  setFractalMode(mode);
+  if(mode==='particles') initParticles();
+});
+
+// ── Randomizer ────────────────────────────────
+function randomizeVisualizer(){
+  // Pick a random mode
+  const mode = FMODES[Math.floor(Math.random()*FMODES.length)];
+  setFractalMode(mode);
+  if(mode==='particles') initParticles();
+
+  // Randomize all sliders
+  const rand=(min,max)=> Math.floor(Math.random()*(max-min+1))+min;
+
+  const speed   = rand(10,90);
+  const zoom    = rand(15,90);
+  const complex = rand(10,90);
+  const color   = rand(0,360);
+  const intense = rand(30,100);
+  const sym     = rand(2,24);
+
+  document.getElementById('fSpeed').value   = speed;
+  document.getElementById('fZoom').value    = zoom;
+  document.getElementById('fComplex').value = complex;
+  document.getElementById('fColor').value   = color;
+  document.getElementById('fIntense').value = intense;
+  document.getElementById('fSym').value     = sym;
+
+  document.getElementById('fSpeedVal').textContent   = speed+'%';
+  document.getElementById('fZoomVal').textContent    = zoom+'%';
+  document.getElementById('fComplexVal').textContent = complex+'%';
+  document.getElementById('fColorVal').textContent   = color+'°';
+  document.getElementById('fIntenseVal').textContent = intense+'%';
+  document.getElementById('fSymVal').textContent     = sym;
+
+  fControls.speed      = speed/100;
+  fControls.zoom       = 0.4 + (zoom/100)*1.6;
+  fControls.complexity = complex/100;
+  fControls.colorShift = color;
+  fControls.intensity  = intense/100;
+  fControls.symmetry   = sym;
+
+  // Flash the button
+  const btn = document.getElementById('btnRandom');
+  btn.classList.add('active-viz');
+  setTimeout(()=>btn.classList.remove('active-viz'), 600);
+}
+
+document.getElementById('btnRandom').addEventListener('click', randomizeVisualizer);
+
+document.getElementById('fractalWrap').addEventListener('click',()=>{
+  const next=FMODES[(FMODES.indexOf(fractalMode)+1)%FMODES.length];
+  setFractalMode(next);
+  if(next==='particles') initParticles();
+});
+
+// ══════════════════════════════════════════════
+// SACRED GEOMETRY — FLOWER OF LIFE
+// ══════════════════════════════════════════════
+// Draws animated Flower of Life with Metatron's Cube overlay
+// Symmetry = number of petal rings, Zoom = scale, Complexity = overlay layers
+// Particles orbit the intersection points
+
+function drawSacred(t, energy){
+  const W = fractalEl.offsetWidth, H = fractalEl.offsetHeight;
+  const cx = fractalCx;
+  const cx2=W/2, cy2=H/2;
+  const col1=getDominantColor(), col2=getSecondColor();
+
+  cx.fillStyle='rgba(3,5,8,0.15)';
+  cx.fillRect(0,0,W,H);
+
+  const rings    = Math.max(1, Math.round(1 + fControls.symmetry / 8));
+  const radius   = Math.max(1, (42 + fControls.zoom * 30) * energy);
+  const intensity= 0.25 + fControls.intensity * 0.75;
+  const centers  = [{x:cx2, y:cy2}];
+
+  for(let ring=1; ring<=rings; ring++){
+    const n = ring * 6;
+    for(let i=0; i<n; i++){
+      const angle = (i/n)*Math.PI*2 + t*0.04*(ring%2===0?1:-1);
+      const dist  = ring * radius;
+      const ox = cx2 + Math.cos(angle)*dist;
+      const oy = cy2 + Math.sin(angle)*dist;
+      centers.push({x:ox, y:oy});
+
+      const breathe = 1 + Math.sin(t*1.5 + ring*0.8 + i*0.3)*0.06*energy;
+      const r = Math.max(0.5, radius * breathe);
+
+      const glowGrd = cx.createRadialGradient(ox,oy,0,ox,oy,r);
+      glowGrd.addColorStop(0, col1+'00');
+      glowGrd.addColorStop(0.7, col1+(Math.floor(intensity*0.08*255)).toString(16).padStart(2,'0'));
+      glowGrd.addColorStop(1, 'rgba(0,0,0,0)');
+      cx.beginPath(); cx.arc(ox,oy,r,0,Math.PI*2);
+      cx.fillStyle=glowGrd; cx.fill();
+
+      cx.beginPath(); cx.arc(ox,oy,r,0,Math.PI*2);
+      cx.strokeStyle = col1+(Math.floor(intensity*0.55*255)).toString(16).padStart(2,'0');
+      cx.lineWidth = 0.8 + fControls.intensity*0.8;
+      cx.stroke();
+    }
+  }
+
+  const cr = Math.max(0.5, radius * (1 + Math.sin(t*1.2)*0.05*energy));
+  cx.beginPath(); cx.arc(cx2,cy2,cr,0,Math.PI*2);
+  cx.strokeStyle = col2+(Math.floor(intensity*0.8*255)).toString(16).padStart(2,'0');
+  cx.lineWidth=1.5; cx.stroke();
+
+  if(fControls.complexity > 0.3){
+    const alpha = (fControls.complexity - 0.3) * intensity * 0.4;
+    const maxCenters = Math.min(centers.length, 13);
+    for(let a=0; a<maxCenters; a++){
+      for(let b=a+1; b<maxCenters; b++){
+        cx.beginPath();
+        cx.moveTo(centers[a].x, centers[a].y);
+        cx.lineTo(centers[b].x, centers[b].y);
+        cx.strokeStyle = col2+(Math.floor(alpha*255)).toString(16).padStart(2,'0');
+        cx.lineWidth=0.5; cx.stroke();
+      }
+    }
+  }
+
+  const vr   = Math.max(0.5, radius * 0.98);
+  const voff = Math.max(0.5, radius * 0.5);
+  cx.beginPath();
+  cx.arc(cx2-voff, cy2, vr, -Math.PI/3, Math.PI/3);
+  cx.arc(cx2+voff, cy2, vr, Math.PI*2/3, Math.PI*4/3);
+  cx.closePath();
+  cx.strokeStyle = col2+(Math.floor(intensity*0.4*255)).toString(16).padStart(2,'0');
+  cx.lineWidth=1; cx.stroke();
+
+  const dotCount = Math.round(6 + fControls.complexity * 12);
+  for(let i=0; i<dotCount; i++){
+    const angle2 = (i/dotCount)*Math.PI*2 + t*0.6;
+    const orbitR = Math.max(1, radius * (0.9 + 0.1*Math.sin(t+i)));
+    const dx = cx2 + Math.cos(angle2)*orbitR;
+    const dy = cy2 + Math.sin(angle2)*orbitR;
+    const dotR = Math.max(0.5, 2 + Math.sin(t*2+i)*1.5*energy);
+    cx.beginPath(); cx.arc(dx,dy,dotR,0,Math.PI*2);
+    cx.fillStyle = i%2===0 ? col1+'dd' : col2+'dd';
+    cx.shadowColor = i%2===0 ? col1 : col2;
+    cx.shadowBlur = Math.max(0, 8*energy);
+    cx.fill(); cx.shadowBlur=0;
+  }
+
+  const starPoints = Math.max(6, Math.round(fControls.symmetry));
+  for(let i=0; i<starPoints; i++){
+    const a1=(i/starPoints)*Math.PI*2+t*0.2;
+    cx.beginPath(); cx.moveTo(cx2,cy2);
+    cx.lineTo(cx2+Math.cos(a1)*radius*0.5, cy2+Math.sin(a1)*radius*0.5);
+    cx.strokeStyle=col1+(Math.floor(intensity*0.3*255)).toString(16).padStart(2,'0');
+    cx.lineWidth=1; cx.stroke();
+  }
+}
+
+// ══════════════════════════════════════════════
+// PARTICLE FIELD
+// ══════════════════════════════════════════════
+// Particles orbit a sacred geometry core, react to beat frequency
+// Speed = particle velocity, Symmetry = orbital rings, Complexity = particle count
+// Each channel gets its own particle color and orbital layer
+
+let particles = [];
+
+function initParticles(){
+  const W = fractalEl.offsetWidth, H = fractalEl.offsetHeight;
+  const count = Math.round(80 + fControls.complexity * 320);
+  particles = [];
+  const cx2=W/2, cy2=H/2;
+
+  for(let i=0; i<count; i++){
+    const ring   = Math.floor(Math.random() * Math.max(1,Math.round(fControls.symmetry/3)));
+    const angle  = Math.random()*Math.PI*2;
+    const baseR  = 30 + ring * (50 + Math.random()*30);
+    const speed  = (0.003 + Math.random()*0.008) * (ring%2===0?1:-1);
+    const size   = 0.8 + Math.random()*2.5;
+    const colIdx = Math.floor(Math.random()*4); // which channel color
+
+    particles.push({ angle, baseR, speed, size, colIdx,
+      x:cx2+Math.cos(angle)*baseR, y:cy2+Math.sin(angle)*baseR,
+      vx:0, vy:0, life:1, trail:[] });
+  }
+}
+
+function getParticleColor(idx){
+  const colors=[
+    WAVES[CH[0].waveKey].color,
+    WAVES[CH[1].waveKey].color,
+    solfState.color,
+    loveState.color,
+  ];
+  return shiftHex(colors[idx%4], fControls.colorShift);
+}
+
+function drawParticles(t, energy){
+  const W = fractalEl.offsetWidth, H = fractalEl.offsetHeight;
+  const cx = fractalCx;
+  const cx2=W/2, cy2=H/2;
+  const col1=getDominantColor(), col2=getSecondColor();
+
+  // Reinit if count changed significantly
+  const targetCount = Math.round(80 + fControls.complexity * 320);
+  if(Math.abs(particles.length - targetCount) > 50) initParticles();
+
+  // Fade
+  cx.fillStyle='rgba(3,5,8,0.12)';
+  cx.fillRect(0,0,W,H);
+
+  // Draw sacred geometry core (subtle)
+  const coreR = Math.max(1, (30 + fControls.zoom*20) * energy);
+  for(let i=0; i<6; i++){
+    const a = (i/6)*Math.PI*2 + t*0.05;
+    const ox = cx2 + Math.cos(a)*coreR;
+    const oy = cy2 + Math.sin(a)*coreR;
+    cx.beginPath(); cx.arc(ox,oy,coreR,0,Math.PI*2);
+    cx.strokeStyle=col1+'18'; cx.lineWidth=0.8; cx.stroke();
+  }
+  cx.beginPath(); cx.arc(cx2,cy2,coreR,0,Math.PI*2);
+  cx.strokeStyle=col2+'28'; cx.lineWidth=1; cx.stroke();
+
+  // Pulse ring on beat
+  const anyPlaying=CH[0].isPlaying||CH[1].isPlaying||solfState.isPlaying||loveState.isPlaying;
+  if(anyPlaying){
+    const pulseR = coreR * (1 + Math.sin(t * (CH[0].isPlaying ? CH[0].beatFreq*0.3 : 3))*0.15*energy);
+    cx.beginPath(); cx.arc(cx2,cy2,pulseR*3,0,Math.PI*2);
+    cx.strokeStyle=col1+'15'; cx.lineWidth=2*energy; cx.stroke();
+  }
+
+  // Update and draw particles
+  const speedMult = 0.2 + fControls.speed * 3;
+  const zoom = fControls.zoom;
+
+  particles.forEach(p=>{
+    // Orbit
+    p.angle += p.speed * speedMult;
+    const wobble = Math.sin(t*0.8 + p.angle)*8*energy;
+    const r = (p.baseR + wobble) * (0.5 + zoom*0.8);
+    p.x = cx2 + Math.cos(p.angle)*r;
+    p.y = cy2 + Math.sin(p.angle)*r;
+
+    // Trail
+    p.trail.push({x:p.x, y:p.y});
+    if(p.trail.length > 12) p.trail.shift();
+
+    // Draw trail
+    const pcol = getParticleColor(p.colIdx);
+    for(let ti=0; ti<p.trail.length-1; ti++){
+      const alpha = (ti/p.trail.length)*0.4*energy;
+      cx.beginPath();
+      cx.moveTo(p.trail[ti].x, p.trail[ti].y);
+      cx.lineTo(p.trail[ti+1].x, p.trail[ti+1].y);
+      cx.strokeStyle = pcol+(Math.floor(alpha*255)).toString(16).padStart(2,'0');
+      cx.lineWidth = p.size*0.6;
+      cx.stroke();
+    }
+
+    // Draw particle
+    const intensity2 = 0.5 + fControls.intensity*0.5;
+    cx.beginPath();
+    cx.arc(p.x, p.y, Math.max(0.1, p.size * energy * intensity2), 0, Math.PI*2);
+    cx.fillStyle = pcol;
+    cx.shadowColor = pcol;
+    cx.shadowBlur = 6 * energy * intensity2;
+    cx.fill();
+    cx.shadowBlur=0;
+  });
+
+  // Center glow
+  const cgrd = cx.createRadialGradient(cx2,cy2,0,cx2,cy2,Math.max(1,coreR*1.5));
+  cgrd.addColorStop(0, col1+(Math.floor(0.3*energy*255)).toString(16).padStart(2,'0'));
+  cgrd.addColorStop(0.5, col2+(Math.floor(0.1*energy*255)).toString(16).padStart(2,'0'));
+  cgrd.addColorStop(1,'rgba(0,0,0,0)');
+  cx.beginPath(); cx.arc(cx2,cy2,coreR*1.5,0,Math.PI*2);
+  cx.fillStyle=cgrd; cx.fill();
+
+  // Particle count label
+  cx.fillStyle='rgba(255,255,255,0.1)';
+  cx.font='10px IBM Plex Mono,monospace';
+  cx.fillText(`${particles.length} particles`, 10, H-10);
+}
+
+// Init particles on load
+initParticles();
+
+// ══════════════════════════════════════════════
+// NATURE SOUNDS
+// ══════════════════════════════════════════════
+// Uses Web Audio API to synthesize nature sounds — no external files needed
+
+const NATURE_SOUNDS = [
+  { id:'rain',    icon:'🌧️', name:'Rain' },
+  { id:'ocean',   icon:'🌊', name:'Ocean' },
+  { id:'forest',  icon:'🌲', name:'Forest' },
+  { id:'thunder', icon:'⛈️', name:'Thunder' },
+  { id:'fire',    icon:'🔥', name:'Fire' },
+  { id:'wind',    icon:'💨', name:'Wind' },
+];
+
+let natureMaster = null;
+let activeNature = null;
+let natureNodes = [];
+let natureVolume = 0.4;
+
+function trackN(n){ natureNodes.push(n); return n; }
+
+function stopNature(){
+  natureNodes.forEach(n=>{ try{n.stop&&n.stop();n.disconnect();}catch(e){} });
+  natureNodes=[];
+  if(natureMaster){try{natureMaster.disconnect();}catch(e){} natureMaster=null;}
+  activeNature=null;
+  document.querySelectorAll('.nature-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('natureDot').classList.remove('live');
+  document.getElementById('natureStatus').textContent='Select a sound to layer';
+}
+
+async function playNature(id){
+  if(activeNature===id){ stopNature(); return; }
+  stopNature();
+  const ac = getAC();
+  if(ac.state==='suspended') await ac.resume();
+  natureMaster = ac.createGain();
+  natureMaster.gain.value = natureVolume;
+  natureMaster.connect(ac.destination);
+  activeNature = id;
+
+  function noise(dur){
+    const buf = ac.createBuffer(1, ac.sampleRate*(dur||2), ac.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+    return buf;
+  }
+
+  function loopNoise(buf){
+    const src=trackN(ac.createBufferSource());
+    src.buffer=buf; src.loop=true; return src;
+  }
+
+  if(id==='rain'){
+    const buf=noise(); const src=loopNoise(buf);
+    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=4000; f.Q.value=0.3;
+    const g=trackN(ac.createGain()); g.gain.value=0.6;
+    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
+    // drip oscillator
+    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=14;
+    const lg=trackN(ac.createGain()); lg.gain.value=0.04;
+    const buf2=noise(); const src2=loopNoise(buf2);
+    const f2=trackN(ac.createBiquadFilter()); f2.type='highpass'; f2.frequency.value=8000;
+    const g2=trackN(ac.createGain()); g2.gain.value=0.2;
+    lfo.connect(lg); lg.connect(g2.gain); src2.connect(f2); f2.connect(g2); g2.connect(natureMaster);
+    lfo.start(); src2.start();
+
+  } else if(id==='ocean'){
+    // Low rumble
+    const buf=noise(); const src=loopNoise(buf);
+    const f=trackN(ac.createBiquadFilter()); f.type='lowpass'; f.frequency.value=400;
+    const g=trackN(ac.createGain()); g.gain.value=0.5;
+    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
+    // Wave swell LFO
+    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.12;
+    const lg=trackN(ac.createGain()); lg.gain.value=0.3;
+    lfo.connect(lg); lg.connect(g.gain); lfo.start();
+    // Surf hiss
+    const buf2=noise(); const src2=loopNoise(buf2);
+    const f2=trackN(ac.createBiquadFilter()); f2.type='bandpass'; f2.frequency.value=2000; f2.Q.value=0.5;
+    const g2=trackN(ac.createGain()); g2.gain.value=0.15;
+    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start();
+
+  } else if(id==='forest'){
+    // Wind layer
+    const buf=noise(); const src=loopNoise(buf);
+    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=800; f.Q.value=0.2;
+    const g=trackN(ac.createGain()); g.gain.value=0.15;
+    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
+    // Bird chirp oscillators
+    [880,1320,1760,2200].forEach((freq,i)=>{
+      const osc=trackN(ac.createOscillator());
+      osc.type='sine'; osc.frequency.value=freq;
+      const og=trackN(ac.createGain()); og.gain.value=0;
+      const lfo2=trackN(ac.createOscillator()); lfo2.type='sine'; lfo2.frequency.value=0.15+i*0.07;
+      const lg2=trackN(ac.createGain()); lg2.gain.value=0.03;
+      lfo2.connect(lg2); lg2.connect(og.gain);
+      osc.connect(og); og.connect(natureMaster);
+      osc.start(); lfo2.start();
+    });
+
+  } else if(id==='thunder'){
+    // Rumble base
+    const buf=noise(4); const src=loopNoise(buf);
+    const f=trackN(ac.createBiquadFilter()); f.type='lowpass'; f.frequency.value=120;
+    const g=trackN(ac.createGain()); g.gain.value=0.7;
+    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
+    // Slow modulation
+    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.06;
+    const lg=trackN(ac.createGain()); lg.gain.value=0.4;
+    lfo.connect(lg); lg.connect(g.gain); lfo.start();
+    // Crack layer
+    const buf2=noise(); const src2=loopNoise(buf2);
+    const f2=trackN(ac.createBiquadFilter()); f2.type='bandpass'; f2.frequency.value=200; f2.Q.value=0.8;
+    const g2=trackN(ac.createGain()); g2.gain.value=0.3;
+    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start();
+
+  } else if(id==='fire'){
+    // Crackle
+    const buf=noise(); const src=loopNoise(buf);
+    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=1000; f.Q.value=0.4;
+    const g=trackN(ac.createGain()); g.gain.value=0.25;
+    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
+    // Low roar
+    const buf2=noise(); const src2=loopNoise(buf2);
+    const f2=trackN(ac.createBiquadFilter()); f2.type='lowpass'; f2.frequency.value=200;
+    const g2=trackN(ac.createGain()); g2.gain.value=0.4;
+    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.5;
+    const lg=trackN(ac.createGain()); lg.gain.value=0.15;
+    lfo.connect(lg); lg.connect(g2.gain);
+    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start(); lfo.start();
+
+  } else if(id==='wind'){
+    const buf=noise(); const src=loopNoise(buf);
+    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=600; f.Q.value=0.15;
+    const g=trackN(ac.createGain()); g.gain.value=0.35;
+    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.08;
+    const lg=trackN(ac.createGain()); lg.gain.value=0.25;
+    lfo.connect(lg); lg.connect(g.gain);
+    src.connect(f); f.connect(g); g.connect(natureMaster); src.start(); lfo.start();
+    // High whistle
+    const buf2=noise(); const src2=loopNoise(buf2);
+    const f2=trackN(ac.createBiquadFilter()); f2.type='highpass'; f2.frequency.value=3000;
+    const g2=trackN(ac.createGain()); g2.gain.value=0.1;
+    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start();
+  }
+
+  document.getElementById('natureDot').classList.add('live');
+  document.getElementById('natureStatus').textContent=`Playing ${NATURE_SOUNDS.find(s=>s.id===id).name}`;
+  document.querySelectorAll('.nature-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.id===id);
+  });
+}
+
+// Build nature grid
+const natureGrid = document.getElementById('natureGrid');
+NATURE_SOUNDS.forEach(s=>{
+  const btn=document.createElement('div');
+  btn.className='nature-btn'; btn.dataset.id=s.id;
+  btn.innerHTML=`<span class="nb-icon">${s.icon}</span><span class="nb-name">${s.name}</span>`;
+  btn.addEventListener('click',()=>playNature(s.id));
+  natureGrid.appendChild(btn);
+});
+
+document.getElementById('natureVolSlider').addEventListener('input',function(){
+  natureVolume=this.value/100;
+  document.getElementById('natureVolVal').textContent=this.value+'%';
+  if(natureMaster) natureMaster.gain.setTargetAtTime(natureVolume,getAC().currentTime,.02);
+});
+
+// ══════════════════════════════════════════════
+// QR CODE GENERATOR
+// ══════════════════════════════════════════════
+// Pure JS QR — no library needed, uses URL encoding + Google Charts API fallback
+
+function buildStackURL(){
+  const base = window.location.href.split('?')[0];
+  const params = new URLSearchParams({
+    ch1w: CH[0].waveKey, ch1f: CH[0].beatFreq, ch1m: CH[0].audioMode,
+    ch2w: CH[1].waveKey, ch2f: CH[1].beatFreq, ch2m: CH[1].audioMode,
+    solf: solfState.selectedHz,
+    love: loveState.selectedHz,
+  });
+  return base+'?'+params.toString();
+}
+
+function buildStackSummary(){
+  return [
+    `Ch1: ${WAVES[CH[0].waveKey].name} ${CH[0].beatFreq.toFixed(1)}Hz (${CH[0].audioMode})`,
+    `Ch2: ${WAVES[CH[1].waveKey].name} ${CH[1].beatFreq.toFixed(1)}Hz (${CH[1].audioMode})`,
+    `Solfeggio: ${solfState.selectedHz}Hz`,
+    `Love: ${loveState.selectedHz}Hz`,
+  ].join('\n');
+}
+
+function drawQRCode(text){
+  const canvas=document.getElementById('qrCanvas');
+  const cx=canvas.getContext('2d');
+  const size=200;
+  canvas.width=size; canvas.height=size;
+
+  // Use Google Charts QR API rendered into an image
+  const url=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+  const img=new Image();
+  img.crossOrigin='anonymous';
+  img.onload=()=>{ cx.drawImage(img,0,0,size,size); };
+  img.onerror=()=>{
+    // Fallback: show a placeholder pattern
+    cx.fillStyle='#fff'; cx.fillRect(0,0,size,size);
+    cx.fillStyle='#111'; cx.font='12px monospace';
+    cx.fillText('Copy link below',10,size/2);
+  };
+  img.src=url;
+}
+
+document.getElementById('btnGenerateQR').addEventListener('click',()=>{
+  const url=buildStackURL();
+  drawQRCode(url);
+  document.getElementById('qrStackPreview').textContent=buildStackSummary();
+  document.getElementById('btnGenerateQR').textContent='✓ Generated';
+  setTimeout(()=>document.getElementById('btnGenerateQR').textContent='Generate QR',2000);
+});
+
+document.getElementById('btnCopyLink').addEventListener('click',()=>{
+  const url=buildStackURL();
+  navigator.clipboard.writeText(url).then(()=>{
+    document.getElementById('btnCopyLink').textContent='✓ Copied!';
+    setTimeout(()=>document.getElementById('btnCopyLink').textContent='⎘ Copy Link',2000);
+  }).catch(()=>{
+    // Fallback for browsers without clipboard API
+    document.getElementById('qrStackPreview').textContent=buildStackURL();
+  });
+});
+</script>
+</body>
+</html>
