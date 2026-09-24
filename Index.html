@@ -155,6 +155,114 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2);}
 .nature-btn .nb-name{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;}
 .nature-btn.active .nb-name{color:#00c8a0;}
 
+/* ── Money Magnet ── */
+.money-channel{background:var(--surface);border:1px solid rgba(255,215,0,.15);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;}
+.money-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(255,215,0,.04) 0%,transparent 70%);}
+.money-channel.active{border-color:rgba(255,215,0,.4);}
+.money-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;}
+.money-title em{font-style:italic;color:#ffd700;}
+.money-subtitle{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.money-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.money-btn{background:var(--dim);border:1px solid transparent;border-radius:4px;padding:12px 6px;cursor:pointer;text-align:center;transition:all .18s;position:relative;overflow:hidden;}
+.money-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#ffd700;transform:scaleX(0);transition:transform .18s;}
+.money-btn:hover::after{transform:scaleX(.7);}
+.money-btn.active{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.4);}
+.money-btn.active::after{transform:scaleX(1);}
+.money-btn .mb-icon{font-size:1.4rem;display:block;margin-bottom:3px;}
+.money-btn .mb-hz{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#ccc;display:block;}
+.money-btn.active .mb-hz{color:#ffd700;}
+.money-btn .mb-name{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;}
+.money-btn .mb-desc{font-size:.62rem;color:rgba(216,221,232,.45);display:block;margin-top:3px;line-height:1.4;}
+
+/* ── Tibetan Bowl ── */
+.bowl-channel{background:linear-gradient(160deg,#0e1419 0%,#110e08 100%);border:1px solid rgba(200,169,110,.18);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;}
+.bowl-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 50% 100%,rgba(200,169,110,.05) 0%,transparent 70%);}
+.bowl-channel.active{border-color:rgba(200,169,110,.45);}
+.bowl-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;}
+.bowl-title em{font-style:italic;color:#c8a96e;}
+.bowl-subtitle{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.bowl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.bowl-freq-btn{background:rgba(200,169,110,.05);border:1px solid rgba(200,169,110,.1);border-radius:4px;padding:10px 4px;cursor:pointer;text-align:center;transition:all .2s;}
+.bowl-freq-btn:hover{border-color:rgba(200,169,110,.35);}
+.bowl-freq-btn.active{background:rgba(200,169,110,.12);border-color:rgba(200,169,110,.5);}
+.bowl-freq-btn .bf-icon{font-size:1.2rem;display:block;margin-bottom:2px;}
+.bowl-freq-btn .bf-hz{font-family:'DM Serif Display',serif;font-size:1rem;color:#aaa;display:block;}
+.bowl-freq-btn.active .bf-hz{color:#c8a96e;}
+.bowl-freq-btn .bf-name{font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;}
+.bowl-canvas-wrap{position:relative;border-radius:4px;overflow:hidden;background:#050400;}
+#bowlCanvas{display:block;width:100%;height:120px;}
+.bowl-next-label{font-size:.55rem;letter-spacing:.12em;color:rgba(200,169,110,.6);text-transform:uppercase;}
+.bowl-interval-section{display:flex;flex-direction:column;gap:8px;}
+.bowl-interval-label{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.bowl-interval-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.bowl-int-btn{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.1em;background:rgba(200,169,110,.06);border:1px solid rgba(200,169,110,.12);border-radius:3px;padding:10px 4px;cursor:pointer;color:var(--muted);transition:all .2s;text-align:center;}
+.bowl-int-btn:hover{border-color:rgba(200,169,110,.4);color:#c8a96e;}
+.bowl-int-btn.active{background:rgba(200,169,110,.15);border-color:rgba(200,169,110,.55);color:#c8a96e;}
+.bowl-custom-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;}
+
+/* ── Crystal Bowl extras ── */
+.crystal-bowl-channel{background:linear-gradient(160deg,#020a14 0%,#06080e 100%) !important;}
+.crystal-bowl-channel .bowl-freq-btn.active{background:rgba(168,216,255,.12);border-color:rgba(168,216,255,.5);}
+.crystal-bowl-channel .bowl-freq-btn.active .bf-hz{color:#a8d8ff;}
+.crystal-bowl-channel .bowl-int-btn.active{background:rgba(168,216,255,.15);border-color:rgba(168,216,255,.55);color:#a8d8ff;}
+
+/* ── Queue Panel ── */
+.queue-panel{background:var(--surface);border:1px solid rgba(200,169,110,.2);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.queue-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;}
+.queue-title em{font-style:italic;color:#c8a96e;}
+.queue-subtitle{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.queue-adder-label{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.queue-add-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.queue-add-btn{background:var(--dim);border:1px solid rgba(200,169,110,.1);border-radius:3px;padding:8px 4px;cursor:pointer;text-align:center;transition:all .18s;font-family:'IBM Plex Mono',monospace;}
+.queue-add-btn:hover{border-color:rgba(200,169,110,.4);background:rgba(200,169,110,.08);}
+.queue-add-btn .qa-hz{font-family:'DM Serif Display',serif;font-size:.95rem;color:#c8a96e;display:block;}
+.queue-add-btn .qa-name{font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin-top:1px;}
+.queue-add-btn.crystal .qa-hz{color:#a8d8ff;}
+.queue-list-wrap{background:#080c10;border-radius:5px;padding:10px;min-height:60px;max-height:200px;overflow-y:auto;}
+.queue-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.queue-list-label{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);}
+.queue-clear-btn{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.1em;background:transparent;border:1px solid rgba(255,100,100,.3);color:rgba(255,100,100,.6);border-radius:2px;padding:4px 8px;cursor:pointer;transition:all .2s;}
+.queue-clear-btn:hover{border-color:rgba(255,100,100,.7);color:rgba(255,100,100,.9);}
+.queue-empty{font-size:.62rem;color:var(--muted);text-align:center;padding:12px;}
+.queue-item{display:flex;flex-direction:column;gap:6px;padding:10px 8px;border-radius:4px;margin-bottom:6px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);transition:background .2s;}
+.queue-item.playing{background:rgba(200,169,110,.1);border-color:rgba(200,169,110,.3);}
+.queue-item-top{display:flex;align-items:center;gap:8px;}
+.queue-item .qi-num{font-size:.58rem;color:var(--muted);width:16px;flex-shrink:0;}
+.queue-item .qi-icon{font-size:1rem;flex-shrink:0;}
+.queue-item .qi-info{flex:1;}
+.queue-item .qi-hz{font-family:'DM Serif Display',serif;font-size:.95rem;color:#c8a96e;}
+.queue-item .qi-hz.crystal{color:#a8d8ff;}
+.queue-item .qi-name{font-size:.58rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.queue-item .qi-remove{font-size:.7rem;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:2px;transition:color .2s;flex-shrink:0;}
+.queue-item .qi-remove:hover{color:#ff6a6a;}
+.queue-item-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:2px;}
+.qi-ctrl{display:flex;flex-direction:column;gap:4px;}
+.qi-ctrl-row{display:flex;justify-content:space-between;align-items:baseline;}
+.qi-ctrl-label{font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.qi-ctrl-val{font-size:.68rem;color:#c8a96e;font-weight:500;}
+.qi-ctrl-val.crystal{color:#a8d8ff;}
+.queue-item input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--dim);border-radius:3px;outline:none;}
+.queue-item input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--tc,#c8a96e);cursor:pointer;box-shadow:0 0 6px var(--tc,#c8a96e);}
+
+/* ── God Frequency ── */
+.god-channel{background:linear-gradient(135deg,#0e1419 0%,#12101a 100%);border:1px solid rgba(255,248,231,.15);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;}
+.god-channel::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 90% 60% at 50% 0%,rgba(255,248,231,.06) 0%,transparent 70%);}
+.god-channel.active{border-color:rgba(255,248,231,.4);box-shadow:0 0 30px rgba(255,248,231,.05);}
+.god-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#fff;}
+.god-title em{font-style:italic;color:#fff8e7;text-shadow:0 0 20px rgba(255,248,231,.6);}
+.god-subtitle{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+.god-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.god-btn{background:rgba(255,248,231,.04);border:1px solid rgba(255,248,231,.08);border-radius:4px;padding:12px 6px;cursor:pointer;text-align:center;transition:all .2s;position:relative;overflow:hidden;}
+.god-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#fff8e7,transparent);transform:scaleX(0);transition:transform .25s;}
+.god-btn:hover::after{transform:scaleX(.8);}
+.god-btn.active{background:rgba(255,248,231,.1);border-color:rgba(255,248,231,.35);box-shadow:0 0 15px rgba(255,248,231,.08);}
+.god-btn.active::after{transform:scaleX(1);}
+.god-btn .gb-icon{font-size:1.4rem;display:block;margin-bottom:3px;}
+.god-btn .gb-hz{font-family:'DM Serif Display',serif;font-size:1.1rem;color:#aaa;display:block;}
+.god-btn.active .gb-hz{color:#fff8e7;text-shadow:0 0 12px rgba(255,248,231,.5);}
+.god-btn .gb-name{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;}
+.god-btn .gb-desc{font-size:.62rem;color:rgba(216,221,232,.45);display:block;margin-top:3px;line-height:1.4;}
+
 /* ── QR Panel ── */
 .qr-panel{background:var(--surface);border:1px solid rgba(122,170,255,.15);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;}
 .qr-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
@@ -221,6 +329,16 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2);}
 .fractal-sliders input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--dim);border-radius:4px;outline:none;}
 .fractal-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#a78bff;cursor:pointer;box-shadow:0 0 10px #a78bff;transition:box-shadow .2s;}
 .fractal-sliders input[type=range]::-webkit-slider-thumb:active{box-shadow:0 0 20px #a78bff;transform:scale(1.15);}
+
+/* Fractal automation */
+.fractal-auto-section{background:rgba(167,139,255,.04);border:1px solid rgba(167,139,255,.12);border-radius:5px;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.fractal-auto-header{display:flex;justify-content:space-between;align-items:center;}
+.fractal-auto-badge{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#a78bff;background:rgba(167,139,255,.12);border:1px solid rgba(167,139,255,.25);padding:2px 8px;border-radius:2px;transition:all .3s;}
+.fractal-auto-badge.active{background:rgba(167,139,255,.22);box-shadow:0 0 10px rgba(167,139,255,.3);}
+.fractal-auto-modes{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.auto-mode-btn{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;border:1px solid rgba(167,139,255,.2);background:transparent;color:var(--muted);border-radius:3px;padding:9px 4px;cursor:pointer;transition:all .2s;text-align:center;}
+.auto-mode-btn:hover{border-color:rgba(167,139,255,.5);color:#a78bff;}
+.auto-mode-btn.active{background:rgba(167,139,255,.15);border-color:rgba(167,139,255,.6);color:#a78bff;}
 </style>
 </head>
 <body>
@@ -369,6 +487,35 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2);}
         <input type="range" id="fSym" min="2" max="24" value="8">
       </div>
     </div>
+
+    <!-- Automation -->
+    <div class="fractal-auto-section">
+      <div class="fractal-auto-header">
+        <span class="fsl-label">⟳ Automation</span>
+        <span class="fractal-auto-badge" id="autoBadge">Off</span>
+      </div>
+
+      <!-- Mode buttons -->
+      <div class="fractal-auto-modes">
+        <button class="auto-mode-btn active" id="autoModeNone" data-mode="none">Off</button>
+        <button class="auto-mode-btn" id="autoModeZoom" data-mode="zoom">Slow Zoom In</button>
+        <button class="auto-mode-btn" id="autoModeBreathe" data-mode="breathe">Breathe</button>
+        <button class="auto-mode-btn" id="autoModeOrbit" data-mode="orbit">Color Orbit</button>
+        <button class="auto-mode-btn" id="autoModePulse" data-mode="pulse">Intensity Pulse</button>
+      </div>
+
+      <!-- Automation controls -->
+      <div class="fractal-sliders" style="margin-top:4px">
+        <div class="fsl">
+          <div class="fsl-row"><span class="fsl-label">Auto Speed</span><span class="fsl-val" id="autoSpeedVal" style="color:#a78bff">30%</span></div>
+          <input type="range" id="autoSpeed" min="1" max="100" value="30" style="--cc:#a78bff">
+        </div>
+        <div class="fsl">
+          <div class="fsl-row"><span class="fsl-label">Reset After</span><span class="fsl-val" id="autoResetVal" style="color:#a78bff">Loop</span></div>
+          <input type="range" id="autoReset" min="0" max="2" step="1" value="0" style="--cc:#a78bff">
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Nature Sounds -->
@@ -389,6 +536,230 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2);}
     <div class="ch-status" style="--cc:#00c8a0;margin-top:4px;">
       <span class="dot" id="natureDot" style="--cc:#00c8a0"></span>
       <span id="natureStatus">Select a sound to layer</span>
+    </div>
+  </div>
+
+  <!-- Money Magnet -->
+  <span class="section-label">Money Magnet Frequencies</span>
+  <div class="money-channel" id="moneyChannel">
+    <div>
+      <div class="money-title">Mo<em>ney</em> Magnet</div>
+      <div class="money-subtitle">Abundance · Prosperity · Manifestation Frequencies</div>
+    </div>
+    <div class="money-grid" id="moneyGrid"></div>
+    <div class="sp-canvas-wrap">
+      <canvas id="moneyCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="moneyPill" style="color:#ffd700;background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);">— Hz</span>
+        <span style="font-size:.5rem;letter-spacing:.1em;color:var(--muted);">PURE TONE</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#ffd700">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="moneyVolVal">60%</span></div>
+        <input type="range" id="moneyVolSlider" min="0" max="100" value="60" style="--cc:#ffd700">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="moneyAmpVal">80%</span></div>
+        <input type="range" id="moneyAmpSlider" min="10" max="100" value="80" style="--cc:#ffd700">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="moneyPlayBtn" style="--cc:#ffd700">▶ Play</button>
+    </div>
+    <div class="ch-status" style="--cc:#ffd700">
+      <span class="dot" id="moneyDot" style="--cc:#ffd700"></span>
+      <span id="moneyStatus">Select a frequency above, then play</span>
+    </div>
+    <div class="note-box">These frequencies are used in manifestation and abundance practices. 528 Hz repairs DNA and opens the heart to receiving. 888 Hz is the numerological frequency of infinite abundance. 963 Hz connects to universal consciousness. Delta 0.5–4 Hz is used in deep manifestation sleep programming. Results are experiential — approach with intention and openness.</div>
+  </div>
+
+  <!-- God Frequency -->
+  <span class="section-label">God Frequencies</span>
+  <div class="god-channel" id="godChannel">
+    <div>
+      <div class="god-title"><em>God</em> Frequency</div>
+      <div class="god-subtitle">Divine Connection · Sacred Tones · Higher Consciousness</div>
+    </div>
+    <div class="god-grid" id="godGrid"></div>
+    <div class="sp-canvas-wrap">
+      <canvas id="godCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="godPill" style="color:#fff8e7;background:rgba(255,248,231,.08);border:1px solid rgba(255,248,231,.2);">— Hz</span>
+        <span style="font-size:.5rem;letter-spacing:.1em;color:var(--muted);">PURE TONE</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#fff8e7">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="godVolVal">60%</span></div>
+        <input type="range" id="godVolSlider" min="0" max="100" value="60" style="--cc:#fff8e7">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Amplitude</span><span class="sl-val" id="godAmpVal">80%</span></div>
+        <input type="range" id="godAmpSlider" min="10" max="100" value="80" style="--cc:#fff8e7">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="godPlayBtn" style="--cc:#fff8e7;color:#080c10">▶ Play</button>
+    </div>
+    <div class="ch-status" style="--cc:#fff8e7">
+      <span class="dot" id="godDot" style="--cc:#fff8e7"></span>
+      <span id="godStatus">Select a frequency above, then play</span>
+    </div>
+    <div class="note-box">963 Hz is universally known as the God Frequency — the highest Solfeggio tone, associated with the crown chakra and direct connection to Source. 432 Hz is the mathematical heartbeat of creation. 999 Hz represents divine completion. 777 Hz carries the vibration of divine luck and spiritual perfection. These are best experienced in silence, eyes closed, with an open and receptive state of mind.</div>
+  </div>
+
+  <!-- Tibetan Bowl -->
+  <span class="section-label">Tibetan Singing Bowl</span>
+  <div class="bowl-channel" id="bowlChannel">
+    <div>
+      <div class="bowl-title">Tibe<em>tan</em> Bowl</div>
+      <div class="bowl-subtitle">Sacred Strike · Adjustable Interval · Resonant Decay</div>
+    </div>
+
+    <!-- Bowl frequency selector -->
+    <div class="bowl-grid" id="bowlGrid"></div>
+
+    <!-- Bowl canvas — shows ripple on each strike -->
+    <div class="bowl-canvas-wrap">
+      <canvas id="bowlCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="bowlPill" style="color:#c8a96e;background:rgba(200,169,110,.1);border:1px solid rgba(200,169,110,.25);">432 Hz</span>
+        <span class="bowl-next-label" id="bowlNextLabel">—</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="sliders" style="--cc:#c8a96e">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="bowlVolVal">70%</span></div>
+        <input type="range" id="bowlVolSlider" min="0" max="100" value="70" style="--cc:#c8a96e">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Decay</span><span class="sl-val" id="bowlDecayVal">4.0s</span></div>
+        <input type="range" id="bowlDecaySlider" min="1" max="12" step="0.5" value="4" style="--cc:#c8a96e">
+      </div>
+    </div>
+
+    <!-- Interval timer -->
+    <div class="bowl-interval-section">
+      <div class="bowl-interval-label">Strike Interval</div>
+      <div class="bowl-interval-grid">
+        <button class="bowl-int-btn active" data-sec="5">5s</button>
+        <button class="bowl-int-btn" data-sec="10">10s</button>
+        <button class="bowl-int-btn" data-sec="15">15s</button>
+        <button class="bowl-int-btn" data-sec="30">30s</button>
+        <button class="bowl-int-btn" data-sec="60">1 min</button>
+        <button class="bowl-int-btn" data-sec="120">2 min</button>
+        <button class="bowl-int-btn" data-sec="300">5 min</button>
+        <button class="bowl-int-btn" data-sec="0">Manual</button>
+      </div>
+      <div class="bowl-custom-row">
+        <span class="sl-label">Custom (seconds)</span>
+        <span class="sl-val" id="bowlCustomVal" style="color:#c8a96e">5s</span>
+      </div>
+      <input type="range" id="bowlCustomSlider" min="1" max="600" value="5" style="--cc:#c8a96e">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-play" id="bowlPlayBtn" style="--cc:#c8a96e">▶ Start</button>
+      <button class="btn btn-mode" id="bowlStrikeBtn" style="--cc:#c8a96e;border-color:rgba(200,169,110,.4);color:#c8a96e">🔔 Strike Now</button>
+    </div>
+    <div class="ch-status" style="--cc:#c8a96e">
+      <span class="dot" id="bowlDot" style="--cc:#c8a96e"></span>
+      <span id="bowlStatus">Select a bowl, set interval, press Start</span>
+    </div>
+  </div>
+
+  <!-- Crystal Bowl -->
+  <span class="section-label">Crystal Singing Bowl</span>
+  <div class="bowl-channel crystal-bowl-channel" id="crystalBowlChannel" style="--bc:#a8d8ff;border-color:rgba(168,216,255,.18)">
+    <div>
+      <div class="bowl-title" style="color:#fff">Crystal <em style="color:#a8d8ff">Bowl</em></div>
+      <div class="bowl-subtitle">Pure Glass Resonance · Quartz Crystal Frequencies</div>
+    </div>
+    <div class="bowl-grid" id="crystalBowlGrid"></div>
+    <div class="bowl-canvas-wrap" style="background:#02040a">
+      <canvas id="crystalBowlCanvas"></canvas>
+      <div class="sp-overlay">
+        <span class="sp-pill" id="crystalBowlPill" style="color:#a8d8ff;background:rgba(168,216,255,.1);border:1px solid rgba(168,216,255,.25);">528 Hz</span>
+        <span class="bowl-next-label" id="crystalNextLabel">—</span>
+      </div>
+    </div>
+    <div class="sliders" style="--cc:#a8d8ff">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Volume</span><span class="sl-val" id="crystalVolVal">70%</span></div>
+        <input type="range" id="crystalVolSlider" min="0" max="100" value="70" style="--cc:#a8d8ff">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Decay</span><span class="sl-val" id="crystalDecayVal">6.0s</span></div>
+        <input type="range" id="crystalDecaySlider" min="1" max="16" step="0.5" value="6" style="--cc:#a8d8ff">
+      </div>
+    </div>
+    <div class="bowl-interval-section">
+      <div class="bowl-interval-label">Strike Interval</div>
+      <div class="bowl-interval-grid" id="crystalIntGrid">
+        <button class="bowl-int-btn active" data-sec="5">5s</button>
+        <button class="bowl-int-btn" data-sec="10">10s</button>
+        <button class="bowl-int-btn" data-sec="15">15s</button>
+        <button class="bowl-int-btn" data-sec="30">30s</button>
+        <button class="bowl-int-btn" data-sec="60">1 min</button>
+        <button class="bowl-int-btn" data-sec="120">2 min</button>
+        <button class="bowl-int-btn" data-sec="300">5 min</button>
+        <button class="bowl-int-btn" data-sec="0">Manual</button>
+      </div>
+      <div class="bowl-custom-row">
+        <span class="sl-label">Custom (seconds)</span>
+        <span class="sl-val" id="crystalCustomVal" style="color:#a8d8ff">5s</span>
+      </div>
+      <input type="range" id="crystalCustomSlider" min="1" max="600" value="5" style="--cc:#a8d8ff">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="crystalPlayBtn" style="--cc:#a8d8ff">▶ Start</button>
+      <button class="btn btn-mode" id="crystalStrikeBtn" style="--cc:#a8d8ff;border-color:rgba(168,216,255,.4);color:#a8d8ff">🔔 Strike Now</button>
+    </div>
+    <div class="ch-status" style="--cc:#a8d8ff">
+      <span class="dot" id="crystalDot" style="--cc:#a8d8ff"></span>
+      <span id="crystalStatus">Select a bowl, set interval, press Start</span>
+    </div>
+  </div>
+
+  <!-- Bowl Queue -->
+  <span class="section-label">Bowl Sequence Queue</span>
+  <div class="queue-panel" id="queuePanel">
+    <div>
+      <div class="queue-title">Se<em>quence</em> Queue</div>
+      <div class="queue-subtitle">Build a custom bowl sequence · Plays in order</div>
+    </div>
+    <div class="queue-adders">
+      <div class="queue-adder-label">Add Tibetan Bowl to Queue:</div>
+      <div class="queue-add-grid" id="tibAddGrid"></div>
+      <div class="queue-adder-label" style="margin-top:10px">Add Crystal Bowl to Queue:</div>
+      <div class="queue-add-grid" id="crystalAddGrid"></div>
+    </div>
+    <div class="queue-list-wrap">
+      <div class="queue-list-header">
+        <span class="queue-list-label">Queue <span id="queueCount">0</span> items</span>
+        <button class="queue-clear-btn" id="queueClearBtn">✕ Clear</button>
+      </div>
+      <div class="queue-list" id="queueList"><div class="queue-empty">No items — add bowls above</div></div>
+    </div>
+    <div class="sliders" style="--cc:#c8a96e;margin-top:4px">
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Gap between strikes</span><span class="sl-val" id="queueGapVal" style="color:#c8a96e">8s</span></div>
+        <input type="range" id="queueGapSlider" min="1" max="60" value="8" style="--cc:#c8a96e">
+      </div>
+      <div class="sl">
+        <div class="sl-row"><span class="sl-label">Repeat queue</span><span class="sl-val" id="queueLoopVal" style="color:#c8a96e">Off</span></div>
+        <input type="range" id="queueLoopSlider" min="0" max="1" step="1" value="0" style="--cc:#c8a96e">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-play" id="queuePlayBtn" style="--cc:#c8a96e">▶ Play Queue</button>
+    </div>
+    <div class="ch-status" style="--cc:#c8a96e">
+      <span class="dot" id="queueDot" style="--cc:#c8a96e"></span>
+      <span id="queueStatus">Add bowls then press Play Queue</span>
     </div>
   </div>
 
@@ -444,9 +815,12 @@ const SOLFEGGIO = [
 const LOVE_FREQS = [
   { hz:40,   name:'40 Hz',  color:'#ff6482', desc:'Gamma · Neural coherence · MIT research' },
   { hz:111,  name:'111 Hz', color:'#c87aff', desc:'Cell regeneration · Beta endorphins' },
+  { hz:396,  name:'396 Hz', color:'#4a7aff', desc:'Release fear · Clear financial blocks' },
+  { hz:417,  name:'417 Hz', color:'#00c8a0', desc:'Break patterns · Shift money mindset' },
   { hz:432,  name:'432 Hz', color:'#ffaa2a', desc:'Alt tuning · Natural resonance' },
   { hz:528,  name:'528 Hz', color:'#ffcf2a', desc:'Love tone · Emotional healing' },
-  { hz:639,  name:'639 Hz', color:'#ff9a2a', desc:'Heart chakra · Relationships' },
+  { hz:639,  name:'639 Hz', color:'#ff9a2a', desc:'Heart chakra · Attract opportunity' },
+  { hz:888,  name:'888 Hz', color:'#ffd700', desc:'Money Magnet · Abundance · Infinite flow' },
 ];
 
 // ══════════════════════════════════════════════
@@ -657,6 +1031,12 @@ async function restartCh(ch){
 // SOLFEGGIO CHANNEL
 // ══════════════════════════════════════════════
 let solfState={selectedHz:528,isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#ffcf2a'};
+let moneyState={selectedHz:888,selectedName:'Infinite Flow',isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#ffd700'};
+let godState={selectedHz:963,selectedName:'God Frequency',isPlaying:false,audio:null,phase:0,waveAmp:.8,volume:.6,color:'#fff8e7'};
+let bowlState={selectedHz:432,selectedName:'Crown Bowl',volume:.7,decay:4,intervalSec:5,isRunning:false,ripples:[],strikeTimer:null,nextStrikeIn:5,countdownTimer:null};
+let crystalBowlState={selectedHz:528,selectedName:'Crystal C5',volume:.7,decay:6,intervalSec:5,isRunning:false,ripples:[],strikeTimer:null,nextStrikeIn:5,countdownTimer:null};
+let queueItems=[]; // [{type:'tibetan'|'crystal', hz, name, icon}]
+let queueRunning=false, queueIdx=0, queueTimer=null, queueLoopOn=false, queueGapSec=8;
 
 const solfGrid=document.getElementById('solfGrid');
 SOLFEGGIO.forEach(s=>{
@@ -781,6 +1161,10 @@ const ch1canvas=regCanvas('canvas1');
 const solfCv=regCanvas('solfCanvas');
 const loveCv=regCanvas('loveCanvas');
 const combCv=regCanvas('combinedCanvas');
+const moneyCv=regCanvas('moneyCanvas');
+const godCv=regCanvas('godCanvas');
+const bowlCv=regCanvas('bowlCanvas');
+const crystalBowlCv=regCanvas('crystalBowlCanvas');
 
 function drawWave(cx,W,H,phase,freq,color,amp,alpha){
   const rgb=hexRgb(color), cy=H/2;
@@ -864,13 +1248,31 @@ function animate(){
   drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp);
   loveState.phase+=loveState.isPlaying?.04:.005;}
 
+  // Money
+  {const {el,cx}=moneyCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,moneyState.color);
+  drawPureTone(cx,W,H,moneyState.phase,moneyState.selectedHz,moneyState.color,moneyState.waveAmp);
+  moneyState.phase+=moneyState.isPlaying?.04:.005;}
+
+  // God
+  {const {el,cx}=godCv,W=el.offsetWidth,H=el.offsetHeight;
+  clearCv(cx,W,H); gridLine(cx,W,H,godState.color);
+  drawPureTone(cx,W,H,godState.phase,godState.selectedHz,godState.color,godState.waveAmp);
+  godState.phase+=godState.isPlaying?.04:.005;}
+
+  // Bowl — ripple visualizer
+  drawBowlCanvas();
+  drawCrystalBowlCanvas();
+
   // Combined
   {const {el,cx}=combCv,W=el.offsetWidth,H=el.offsetHeight;
   clearCv(cx,W,H); gridLine(cx,W,H,'#4a7aff');
   drawWave(cx,W,H,CH[0].phase,CH[0].beatFreq,WAVES[CH[0].waveKey].color,CH[0].waveAmp,.7);
   drawWave(cx,W,H,CH[1].phase,CH[1].beatFreq,WAVES[CH[1].waveKey].color,CH[1].waveAmp,.7);
   drawPureTone(cx,W,H,solfState.phase,solfState.selectedHz,solfState.color,solfState.waveAmp*.5);
-  drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp*.5);}
+  drawPureTone(cx,W,H,loveState.phase,loveState.selectedHz,loveState.color,loveState.waveAmp*.5);
+  drawPureTone(cx,W,H,moneyState.phase,moneyState.selectedHz,moneyState.color,moneyState.waveAmp*.5);
+  drawPureTone(cx,W,H,godState.phase,godState.selectedHz,godState.color,godState.waveAmp*.5);}
 
   requestAnimationFrame(animate);
 }
@@ -887,6 +1289,18 @@ let fractalT = 0;
 
 // ── Manual controls ───────────────────────────
 let fControls = { speed:0.5, zoom:1.0, complexity:0.5, colorShift:0, intensity:0.5, symmetry:8 };
+
+// ── Fractal automation state ──────────────────
+let fAuto = {
+  mode: 'none',   // 'none' | 'zoom' | 'breathe' | 'orbit' | 'pulse'
+  speed: 0.3,     // 0..1
+  resetMode: 0,   // 0=loop, 1=reset, 2=hold at end
+  // Internal counters
+  t: 0,
+  zoomDir: 1,
+  baseZoom: 1.0,
+  baseIntensity: 0.5,
+};
 
 document.getElementById('fSpeed').addEventListener('input', function(){
   fControls.speed = this.value/100;
@@ -1173,6 +1587,7 @@ function drawKaleid(t, energy){
 // ── Main fractal loop ─────────────────────────
 function fractalLoop(){
   const energy = getEnergy();
+  tickAutomation(energy);
   const anyPlaying = CH[0].isPlaying||CH[1].isPlaying||solfState.isPlaying||loveState.isPlaying;
   const speed = (anyPlaying ? 0.018*(1+energy*0.3) : 0.005) * (0.1+fControls.speed*1.8);
   fractalT += speed;
@@ -1246,6 +1661,91 @@ function randomizeVisualizer(){
 }
 
 document.getElementById('btnRandom').addEventListener('click', randomizeVisualizer);
+
+// ── Automation controls ───────────────────────
+document.querySelectorAll('.auto-mode-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.auto-mode-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    fAuto.mode = this.dataset.mode;
+    fAuto.t = 0;
+    // Snapshot current values as base when starting
+    fAuto.baseZoom      = fControls.zoom;
+    fAuto.baseIntensity = fControls.intensity;
+    fAuto.zoomDir       = 1;
+    const badge = document.getElementById('autoBadge');
+    const labels = {none:'Off',zoom:'Slow Zoom In',breathe:'Breathe',orbit:'Color Orbit',pulse:'Intensity Pulse'};
+    badge.textContent = labels[fAuto.mode]||fAuto.mode;
+    badge.classList.toggle('active', fAuto.mode!=='none');
+  });
+});
+
+document.getElementById('autoSpeed').addEventListener('input',function(){
+  fAuto.speed = this.value/100;
+  document.getElementById('autoSpeedVal').textContent = this.value+'%';
+});
+
+document.getElementById('autoReset').addEventListener('input',function(){
+  fAuto.resetMode = parseInt(this.value);
+  const labels=['Loop','Reset','Hold'];
+  document.getElementById('autoResetVal').textContent = labels[fAuto.resetMode];
+});
+
+// ── Automation tick — called inside fractalLoop ─
+function tickAutomation(energy){
+  if(fAuto.mode==='none') return;
+  const spd = fAuto.speed * 0.003; // faster zoom
+  fAuto.t += spd;
+
+  if(fAuto.mode==='zoom'){
+    // Slow continuous zoom in: zoom creeps from baseZoom toward 2.0
+    const progress = (Math.sin(fAuto.t * Math.PI - Math.PI/2)+1)/2; // 0→1
+    const newZoom = fAuto.baseZoom + progress * (2.0 - fAuto.baseZoom);
+
+    if(fAuto.resetMode===0){
+      // Loop: when it reaches full, reset t so it starts over smoothly
+      if(fAuto.t > 1){ fAuto.t = 0; }
+    } else if(fAuto.resetMode===1){
+      // Reset: zoom back to start then repeat
+      if(fAuto.t > 1){ fAuto.t = 0; fAuto.baseZoom=fControls.zoom; }
+    } else {
+      // Hold: stop at max
+      if(fAuto.t > 1) fAuto.t = 1;
+    }
+
+    fControls.zoom = Math.max(0.4, Math.min(2.0, newZoom));
+    // Sync slider + display
+    const zPct = Math.round((fControls.zoom - 0.4) / 1.6 * 100);
+    document.getElementById('fZoom').value = zPct;
+    document.getElementById('fZoomVal').textContent = zPct+'%';
+
+  } else if(fAuto.mode==='breathe'){
+    // Intensity and zoom breathe in/out like lungs
+    const wave = (Math.sin(fAuto.t * Math.PI * 2)+1)/2; // 0→1→0→1
+    fControls.zoom      = 0.6 + wave * 1.0;
+    fControls.intensity = 0.2 + wave * 0.8;
+    const zPct = Math.round((fControls.zoom-0.4)/1.6*100);
+    const iPct = Math.round(fControls.intensity*100);
+    document.getElementById('fZoom').value      = zPct;
+    document.getElementById('fZoomVal').textContent = zPct+'%';
+    document.getElementById('fIntense').value   = iPct;
+    document.getElementById('fIntenseVal').textContent = iPct+'%';
+
+  } else if(fAuto.mode==='orbit'){
+    // Color slowly rotates through full spectrum
+    fControls.colorShift = (fAuto.t * 360 * 2) % 360;
+    document.getElementById('fColor').value = Math.round(fControls.colorShift);
+    document.getElementById('fColorVal').textContent = Math.round(fControls.colorShift)+'°';
+
+  } else if(fAuto.mode==='pulse'){
+    // Intensity pulses in sharp bursts — like a heartbeat
+    const raw = Math.pow(Math.max(0, Math.sin(fAuto.t * Math.PI * 4)), 3);
+    fControls.intensity = 0.15 + raw * 0.85;
+    const iPct = Math.round(fControls.intensity*100);
+    document.getElementById('fIntense').value = iPct;
+    document.getElementById('fIntenseVal').textContent = iPct+'%';
+  }
+}
 
 document.getElementById('fractalWrap').addEventListener('click',()=>{
   const next=FMODES[(FMODES.indexOf(fractalMode)+1)%FMODES.length];
@@ -1466,254 +1966,4 @@ function drawParticles(t, energy){
 
   // Center glow
   const cgrd = cx.createRadialGradient(cx2,cy2,0,cx2,cy2,Math.max(1,coreR*1.5));
-  cgrd.addColorStop(0, col1+(Math.floor(0.3*energy*255)).toString(16).padStart(2,'0'));
-  cgrd.addColorStop(0.5, col2+(Math.floor(0.1*energy*255)).toString(16).padStart(2,'0'));
-  cgrd.addColorStop(1,'rgba(0,0,0,0)');
-  cx.beginPath(); cx.arc(cx2,cy2,coreR*1.5,0,Math.PI*2);
-  cx.fillStyle=cgrd; cx.fill();
-
-  // Particle count label
-  cx.fillStyle='rgba(255,255,255,0.1)';
-  cx.font='10px IBM Plex Mono,monospace';
-  cx.fillText(`${particles.length} particles`, 10, H-10);
-}
-
-// Init particles on load
-initParticles();
-
-// ══════════════════════════════════════════════
-// NATURE SOUNDS
-// ══════════════════════════════════════════════
-// Uses Web Audio API to synthesize nature sounds — no external files needed
-
-const NATURE_SOUNDS = [
-  { id:'rain',    icon:'🌧️', name:'Rain' },
-  { id:'ocean',   icon:'🌊', name:'Ocean' },
-  { id:'forest',  icon:'🌲', name:'Forest' },
-  { id:'thunder', icon:'⛈️', name:'Thunder' },
-  { id:'fire',    icon:'🔥', name:'Fire' },
-  { id:'wind',    icon:'💨', name:'Wind' },
-];
-
-let natureMaster = null;
-let activeNature = null;
-let natureNodes = [];
-let natureVolume = 0.4;
-
-function trackN(n){ natureNodes.push(n); return n; }
-
-function stopNature(){
-  natureNodes.forEach(n=>{ try{n.stop&&n.stop();n.disconnect();}catch(e){} });
-  natureNodes=[];
-  if(natureMaster){try{natureMaster.disconnect();}catch(e){} natureMaster=null;}
-  activeNature=null;
-  document.querySelectorAll('.nature-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('natureDot').classList.remove('live');
-  document.getElementById('natureStatus').textContent='Select a sound to layer';
-}
-
-async function playNature(id){
-  if(activeNature===id){ stopNature(); return; }
-  stopNature();
-  const ac = getAC();
-  if(ac.state==='suspended') await ac.resume();
-  natureMaster = ac.createGain();
-  natureMaster.gain.value = natureVolume;
-  natureMaster.connect(ac.destination);
-  activeNature = id;
-
-  function noise(dur){
-    const buf = ac.createBuffer(1, ac.sampleRate*(dur||2), ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
-    return buf;
-  }
-
-  function loopNoise(buf){
-    const src=trackN(ac.createBufferSource());
-    src.buffer=buf; src.loop=true; return src;
-  }
-
-  if(id==='rain'){
-    const buf=noise(); const src=loopNoise(buf);
-    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=4000; f.Q.value=0.3;
-    const g=trackN(ac.createGain()); g.gain.value=0.6;
-    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
-    // drip oscillator
-    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=14;
-    const lg=trackN(ac.createGain()); lg.gain.value=0.04;
-    const buf2=noise(); const src2=loopNoise(buf2);
-    const f2=trackN(ac.createBiquadFilter()); f2.type='highpass'; f2.frequency.value=8000;
-    const g2=trackN(ac.createGain()); g2.gain.value=0.2;
-    lfo.connect(lg); lg.connect(g2.gain); src2.connect(f2); f2.connect(g2); g2.connect(natureMaster);
-    lfo.start(); src2.start();
-
-  } else if(id==='ocean'){
-    // Low rumble
-    const buf=noise(); const src=loopNoise(buf);
-    const f=trackN(ac.createBiquadFilter()); f.type='lowpass'; f.frequency.value=400;
-    const g=trackN(ac.createGain()); g.gain.value=0.5;
-    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
-    // Wave swell LFO
-    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.12;
-    const lg=trackN(ac.createGain()); lg.gain.value=0.3;
-    lfo.connect(lg); lg.connect(g.gain); lfo.start();
-    // Surf hiss
-    const buf2=noise(); const src2=loopNoise(buf2);
-    const f2=trackN(ac.createBiquadFilter()); f2.type='bandpass'; f2.frequency.value=2000; f2.Q.value=0.5;
-    const g2=trackN(ac.createGain()); g2.gain.value=0.15;
-    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start();
-
-  } else if(id==='forest'){
-    // Wind layer
-    const buf=noise(); const src=loopNoise(buf);
-    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=800; f.Q.value=0.2;
-    const g=trackN(ac.createGain()); g.gain.value=0.15;
-    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
-    // Bird chirp oscillators
-    [880,1320,1760,2200].forEach((freq,i)=>{
-      const osc=trackN(ac.createOscillator());
-      osc.type='sine'; osc.frequency.value=freq;
-      const og=trackN(ac.createGain()); og.gain.value=0;
-      const lfo2=trackN(ac.createOscillator()); lfo2.type='sine'; lfo2.frequency.value=0.15+i*0.07;
-      const lg2=trackN(ac.createGain()); lg2.gain.value=0.03;
-      lfo2.connect(lg2); lg2.connect(og.gain);
-      osc.connect(og); og.connect(natureMaster);
-      osc.start(); lfo2.start();
-    });
-
-  } else if(id==='thunder'){
-    // Rumble base
-    const buf=noise(4); const src=loopNoise(buf);
-    const f=trackN(ac.createBiquadFilter()); f.type='lowpass'; f.frequency.value=120;
-    const g=trackN(ac.createGain()); g.gain.value=0.7;
-    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
-    // Slow modulation
-    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.06;
-    const lg=trackN(ac.createGain()); lg.gain.value=0.4;
-    lfo.connect(lg); lg.connect(g.gain); lfo.start();
-    // Crack layer
-    const buf2=noise(); const src2=loopNoise(buf2);
-    const f2=trackN(ac.createBiquadFilter()); f2.type='bandpass'; f2.frequency.value=200; f2.Q.value=0.8;
-    const g2=trackN(ac.createGain()); g2.gain.value=0.3;
-    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start();
-
-  } else if(id==='fire'){
-    // Crackle
-    const buf=noise(); const src=loopNoise(buf);
-    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=1000; f.Q.value=0.4;
-    const g=trackN(ac.createGain()); g.gain.value=0.25;
-    src.connect(f); f.connect(g); g.connect(natureMaster); src.start();
-    // Low roar
-    const buf2=noise(); const src2=loopNoise(buf2);
-    const f2=trackN(ac.createBiquadFilter()); f2.type='lowpass'; f2.frequency.value=200;
-    const g2=trackN(ac.createGain()); g2.gain.value=0.4;
-    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.5;
-    const lg=trackN(ac.createGain()); lg.gain.value=0.15;
-    lfo.connect(lg); lg.connect(g2.gain);
-    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start(); lfo.start();
-
-  } else if(id==='wind'){
-    const buf=noise(); const src=loopNoise(buf);
-    const f=trackN(ac.createBiquadFilter()); f.type='bandpass'; f.frequency.value=600; f.Q.value=0.15;
-    const g=trackN(ac.createGain()); g.gain.value=0.35;
-    const lfo=trackN(ac.createOscillator()); lfo.type='sine'; lfo.frequency.value=0.08;
-    const lg=trackN(ac.createGain()); lg.gain.value=0.25;
-    lfo.connect(lg); lg.connect(g.gain);
-    src.connect(f); f.connect(g); g.connect(natureMaster); src.start(); lfo.start();
-    // High whistle
-    const buf2=noise(); const src2=loopNoise(buf2);
-    const f2=trackN(ac.createBiquadFilter()); f2.type='highpass'; f2.frequency.value=3000;
-    const g2=trackN(ac.createGain()); g2.gain.value=0.1;
-    src2.connect(f2); f2.connect(g2); g2.connect(natureMaster); src2.start();
-  }
-
-  document.getElementById('natureDot').classList.add('live');
-  document.getElementById('natureStatus').textContent=`Playing ${NATURE_SOUNDS.find(s=>s.id===id).name}`;
-  document.querySelectorAll('.nature-btn').forEach(b=>{
-    b.classList.toggle('active', b.dataset.id===id);
-  });
-}
-
-// Build nature grid
-const natureGrid = document.getElementById('natureGrid');
-NATURE_SOUNDS.forEach(s=>{
-  const btn=document.createElement('div');
-  btn.className='nature-btn'; btn.dataset.id=s.id;
-  btn.innerHTML=`<span class="nb-icon">${s.icon}</span><span class="nb-name">${s.name}</span>`;
-  btn.addEventListener('click',()=>playNature(s.id));
-  natureGrid.appendChild(btn);
-});
-
-document.getElementById('natureVolSlider').addEventListener('input',function(){
-  natureVolume=this.value/100;
-  document.getElementById('natureVolVal').textContent=this.value+'%';
-  if(natureMaster) natureMaster.gain.setTargetAtTime(natureVolume,getAC().currentTime,.02);
-});
-
-// ══════════════════════════════════════════════
-// QR CODE GENERATOR
-// ══════════════════════════════════════════════
-// Pure JS QR — no library needed, uses URL encoding + Google Charts API fallback
-
-function buildStackURL(){
-  const base = window.location.href.split('?')[0];
-  const params = new URLSearchParams({
-    ch1w: CH[0].waveKey, ch1f: CH[0].beatFreq, ch1m: CH[0].audioMode,
-    ch2w: CH[1].waveKey, ch2f: CH[1].beatFreq, ch2m: CH[1].audioMode,
-    solf: solfState.selectedHz,
-    love: loveState.selectedHz,
-  });
-  return base+'?'+params.toString();
-}
-
-function buildStackSummary(){
-  return [
-    `Ch1: ${WAVES[CH[0].waveKey].name} ${CH[0].beatFreq.toFixed(1)}Hz (${CH[0].audioMode})`,
-    `Ch2: ${WAVES[CH[1].waveKey].name} ${CH[1].beatFreq.toFixed(1)}Hz (${CH[1].audioMode})`,
-    `Solfeggio: ${solfState.selectedHz}Hz`,
-    `Love: ${loveState.selectedHz}Hz`,
-  ].join('\n');
-}
-
-function drawQRCode(text){
-  const canvas=document.getElementById('qrCanvas');
-  const cx=canvas.getContext('2d');
-  const size=200;
-  canvas.width=size; canvas.height=size;
-
-  // Use Google Charts QR API rendered into an image
-  const url=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
-  const img=new Image();
-  img.crossOrigin='anonymous';
-  img.onload=()=>{ cx.drawImage(img,0,0,size,size); };
-  img.onerror=()=>{
-    // Fallback: show a placeholder pattern
-    cx.fillStyle='#fff'; cx.fillRect(0,0,size,size);
-    cx.fillStyle='#111'; cx.font='12px monospace';
-    cx.fillText('Copy link below',10,size/2);
-  };
-  img.src=url;
-}
-
-document.getElementById('btnGenerateQR').addEventListener('click',()=>{
-  const url=buildStackURL();
-  drawQRCode(url);
-  document.getElementById('qrStackPreview').textContent=buildStackSummary();
-  document.getElementById('btnGenerateQR').textContent='✓ Generated';
-  setTimeout(()=>document.getElementById('btnGenerateQR').textContent='Generate QR',2000);
-});
-
-document.getElementById('btnCopyLink').addEventListener('click',()=>{
-  const url=buildStackURL();
-  navigator.clipboard.writeText(url).then(()=>{
-    document.getElementById('btnCopyLink').textContent='✓ Copied!';
-    setTimeout(()=>document.getElementById('btnCopyLink').textContent='⎘ Copy Link',2000);
-  }).catch(()=>{
-    // Fallback for browsers without clipboard API
-    document.getElementById('qrStackPreview').textContent=buildStackURL();
-  });
-});
-</script>
-</body>
-</html>
+  cgrd.addColorStop(0, col1+(Math.floor(0.3*energy*255)).toString(16).pa
